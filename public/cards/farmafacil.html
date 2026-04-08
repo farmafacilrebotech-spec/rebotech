@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FarmaFácil — ReBoTech</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root{
+  --bg:#071015;
+  --card:#0d1a20;
+  --card-2:#11242b;
+  --line:rgba(78,211,194,0.20);
+  --line-soft:rgba(255,255,255,0.08);
+  --teal:#4ed3c2;
+  --teal-2:#1abbb3;
+  --text:#d9e4e7;
+  --muted:rgba(255,255,255,0.58);
+  --soft:#eef9f7;
+}
+
+body{
+  background:#05080c;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:Inter,sans-serif;
+}
+
+/* CARD */
+.card{
+  width:560px;
+  height:640px;
+  border-radius:24px;
+  overflow:hidden;
+  position:relative;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  border:1px solid rgba(78,211,194,0.18);
+  background:
+    linear-gradient(180deg, rgba(4,10,14,0.78), rgba(4,10,14,0.95)),
+    url('/images/ai-bg.jpg') center/cover no-repeat;
+  transition:transform .3s ease, box-shadow .3s ease;
+}
+
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.65),
+    0 0 30px rgba(78,211,194,0.12);
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  top:-90px;
+  right:-90px;
+  width:300px;
+  height:300px;
+  background:radial-gradient(circle, rgba(78,211,194,0.18), transparent 70%);
+}
+
+.card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(78,211,194,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78,211,194,0.035) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+
+.card > *{
+  position:relative;
+  z-index:2;
+}
+
+/* TAG */
+.tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--teal);
+  border:1px solid rgba(78,211,194,0.35);
+  border-radius:999px;
+  padding:6px 12px;
+  background:rgba(78,211,194,0.08);
+}
+
+.tag::before{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--teal);
+  box-shadow:0 0 10px var(--teal);
+}
+
+/* MAIN PANEL */
+.product-shell{
+  margin-top:16px;
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:rgba(10,20,25,0.54);
+  backdrop-filter:blur(12px);
+  overflow:hidden;
+  min-height:295px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 20px 40px rgba(0,0,0,0.22);
+}
+
+.topbar{
+  height:34px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 12px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.02);
+}
+
+.topbar i{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:rgba(78,211,194,0.8);
+}
+
+.dashboard{
+  padding:14px;
+  display:grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap:12px;
+}
+
+.left-col,
+.right-col{
+  display:grid;
+  gap:10px;
+}
+
+/* QR / CATÁLOGO MOCK */
+.catalog-panel{
+  border:1px solid rgba(78,211,194,0.18);
+  background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  border-radius:14px;
+  padding:12px;
+}
+
+.catalog-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.catalog-title strong{
+  font-size:12px;
+  color:var(--text);
+  font-weight:600;
+}
+
+.catalog-badge{
+  font-size:10px;
+  color:var(--teal);
+  background:rgba(78,211,194,0.08);
+  border:1px solid rgba(78,211,194,0.2);
+  border-radius:999px;
+  padding:4px 8px;
+}
+
+.products{
+  display:grid;
+  grid-template-columns: repeat(2,1fr);
+  gap:8px;
+}
+
+.product{
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);
+  padding:8px;
+  transition:transform .2s ease,border-color .2s ease;
+}
+
+.product:hover{
+  transform:translateY(-2px);
+  border-color:rgba(78,211,194,0.25);
+}
+
+.thumb{
+  height:42px;
+  border-radius:8px;
+  margin-bottom:6px;
+  background:
+    linear-gradient(135deg, rgba(78,211,194,0.20), rgba(78,211,194,0.04)),
+    rgba(255,255,255,0.03);
+  border:1px solid rgba(78,211,194,0.12);
+}
+
+.product-name{
+  font-size:10.5px;
+  color:rgba(255,255,255,0.82);
+  margin-bottom:4px;
+}
+
+.product-meta{
+  display:flex;
+  justify-content:space-between;
+  font-size:9.5px;
+  color:rgba(255,255,255,0.46);
+}
+
+/* KIOSK / ORDER FLOW */
+.kiosk-panel{
+  border:1px solid rgba(78,211,194,0.18);
+  background:rgba(255,255,255,0.02);
+  border-radius:14px;
+  padding:12px;
+}
+
+.kiosk-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.kiosk-head strong{
+  font-size:12px;
+  color:var(--text);
+}
+
+.kiosk-status{
+  font-size:10px;
+  color:var(--teal);
+}
+
+.flow{
+  display:grid;
+  gap:8px;
+}
+
+.flow-step{
+  display:grid;
+  grid-template-columns: 22px 1fr;
+  gap:8px;
+  align-items:start;
+}
+
+.flow-step b{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  font-size:10px;
+  color:#032c28;
+  background:linear-gradient(135deg, var(--teal), var(--teal-2));
+  box-shadow:0 0 12px rgba(78,211,194,0.28);
+}
+
+.flow-step span{
+  font-size:10.5px;
+  color:rgba(255,255,255,0.72);
+  line-height:1.35;
+}
+
+/* RIGHT SIDE */
+.assistant-panel,
+.orders-panel{
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.025);
+  padding:12px;
+}
+
+.panel-title{
+  font-size:12px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:10px;
+}
+
+.chat-mini{
+  display:grid;
+  gap:7px;
+}
+
+.bubble{
+  max-width:92%;
+  padding:8px 10px;
+  border-radius:12px;
+  font-size:10px;
+  line-height:1.35;
+}
+
+.bot{
+  background:rgba(78,211,194,0.10);
+  border:1px solid rgba(78,211,194,0.20);
+  color:#d9fbf6;
+  border-top-left-radius:4px;
+}
+
+.user{
+  margin-left:auto;
+  background:rgba(255,255,255,0.90);
+  color:#08312d;
+  border-top-right-radius:4px;
+}
+
+.typing{
+  width:52px;
+  display:flex;
+  gap:4px;
+  padding:7px 9px;
+  border-radius:999px;
+  background:rgba(78,211,194,0.08);
+  border:1px solid rgba(78,211,194,0.18);
+}
+
+.typing i{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--teal);
+  animation:blink 1s infinite;
+}
+.typing i:nth-child(2){ animation-delay:.2s; }
+.typing i:nth-child(3){ animation-delay:.4s; }
+
+@keyframes blink{
+  50%{ transform:translateY(-2px); opacity:.45; }
+}
+
+.orders-list{
+  display:grid;
+  gap:8px;
+}
+
+.order{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  border-radius:10px;
+  padding:8px 10px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+.order span{
+  font-size:10px;
+  color:rgba(255,255,255,0.72);
+}
+
+.state{
+  font-size:9px;
+  padding:4px 8px;
+  border-radius:999px;
+  font-weight:600;
+}
+
+.pending{
+  background:rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.72);
+}
+
+.ready{
+  background:rgba(78,211,194,0.12);
+  color:var(--teal);
+  border:1px solid rgba(78,211,194,0.18);
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  gap:10px;
+}
+
+.stat{
+  flex:1;
+  border-radius:12px;
+  padding:12px;
+  text-align:center;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+.stat b{
+  display:block;
+  font-size:18px;
+  color:var(--teal);
+}
+
+.stat span{
+  font-size:10px;
+  color:rgba(255,255,255,0.5);
+}
+
+/* TEXT */
+h1{
+  font-family:Syne,sans-serif;
+  font-size:28px;
+  color:#d1d5db;
+  line-height:1.05;
+  margin-top:10px;
+}
+
+h1 span{
+  color:var(--teal);
+  text-shadow:0 0 12px rgba(78,211,194,0.45);
+}
+
+p{
+  margin-top:6px;
+  font-size:13px;
+  line-height:1.5;
+  color:rgba(255,255,255,0.62);
+}
+
+/* CTA */
+.cta{
+  margin-top:12px;
+  display:inline-block;
+  padding:10px 16px;
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--teal),var(--teal-2));
+  color:#003a35;
+  font-weight:600;
+  box-shadow:0 10px 20px -10px rgba(78,211,194,.55);
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="tag">ReBoTech Solutions · FarmaFácil</div>
+
+  <div class="product-shell">
+    <div class="topbar">
+      <i></i><i></i><i></i>
+    </div>
+
+    <div class="dashboard">
+      <div class="left-col">
+
+        <div class="catalog-panel">
+          <div class="catalog-title">
+            <strong>Catálogo digital</strong>
+            <div class="catalog-badge">QR activo</div>
+          </div>
+
+          <div class="products">
+            <div class="product">
+              <div class="thumb"></div>
+              <div class="product-name">Vitamina C</div>
+              <div class="product-meta"><span>Stock</span><span>12,90 €</span></div>
+            </div>
+
+            <div class="product">
+              <div class="thumb"></div>
+              <div class="product-name">Protector solar</div>
+              <div class="product-meta"><span>Oferta</span><span>18,50 €</span></div>
+            </div>
+
+            <div class="product">
+              <div class="thumb"></div>
+              <div class="product-name">Colágeno</div>
+              <div class="product-meta"><span>Top venta</span><span>24,00 €</span></div>
+            </div>
+
+            <div class="product">
+              <div class="thumb"></div>
+              <div class="product-name">Dermocosmética</div>
+              <div class="product-meta"><span>Nuevo</span><span>29,90 €</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kiosk-panel">
+          <div class="kiosk-head">
+            <strong>Flujo de pedido</strong>
+            <div class="kiosk-status">Kiosko / QR</div>
+          </div>
+
+          <div class="flow">
+            <div class="flow-step">
+              <b>1</b>
+              <span>El cliente entra con QR o desde el kiosko.</span>
+            </div>
+            <div class="flow-step">
+              <b>2</b>
+              <span>Consulta catálogo, pregunta al asistente o hace pedido.</span>
+            </div>
+            <div class="flow-step">
+              <b>3</b>
+              <span>La farmacia lo prepara y avisa al cliente para recoger.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="right-col">
+
+        <div class="assistant-panel">
+          <div class="panel-title">Asistente IA</div>
+          <div class="chat-mini">
+            <div class="bubble bot">¿Buscas algo para defensas o energía?</div>
+            <div class="bubble user">Quiero algo para el cansancio.</div>
+            <div class="bubble bot">Te enseño opciones disponibles y promociones.</div>
+            <div class="typing"><i></i><i></i><i></i></div>
+          </div>
+        </div>
+
+        <div class="orders-panel">
+          <div class="panel-title">Pedidos en preparación</div>
+          <div class="orders-list">
+            <div class="order">
+              <span>#FF-2031</span>
+              <div class="state pending">Pendiente</div>
+            </div>
+            <div class="order">
+              <span>#FF-2032</span>
+              <div class="state ready">Preparado</div>
+            </div>
+            <div class="order">
+              <span>#FF-2033</span>
+              <div class="state pending">Pendiente</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b>+30%</b><span>ticket medio</span></div>
+    <div class="stat"><b>-60%</b><span>interrupciones</span></div>
+    <div class="stat"><b>24/7</b><span>atención</span></div>
+  </div>
+
+  <div>
+    <h1>La forma más fácil de <span>digitalizar tu farmacia</span></h1>
+    <p>Catálogo, kiosko y asistente en una experiencia limpia para clientes y farmacéuticos, sin fricción y con más control.</p>
+    <div class="cta">Solicitar demo →</div>
+  </div>
+
+</div>
+
+</body>
+</html>

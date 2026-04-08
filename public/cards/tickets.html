@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickets — ReBoTech</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Syne:wght@800&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background:#05080c;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  font-family:Inter;
+}
+
+/* CARD */
+.card{
+  width:560px;
+  height:640px;
+  border-radius:24px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(78,211,194,.2);
+
+  background:
+  linear-gradient(180deg,rgba(5,10,15,.85),rgba(5,10,15,.95)),
+  url('/images/ai-bg.jpg') center/cover;
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  top:-100px;
+  right:-100px;
+  width:300px;
+  height:300px;
+  background:radial-gradient(circle,rgba(78,211,194,.3),transparent 70%);
+}
+
+/* TAG */
+.tag{
+  font-size:10px;
+  text-transform:uppercase;
+  color:#4ed3c2;
+  border:1px solid rgba(78,211,194,.35);
+  border-radius:999px;
+  padding:6px 12px;
+  display:inline-block;
+}
+
+/* STACK */
+.stack{
+  position:relative;
+  height:280px;
+}
+
+.ticket{
+  position:absolute;
+  width:100%;
+  height:170px;
+  border-radius:18px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  background:rgba(10,20,25,.7);
+  border:1px solid rgba(78,211,194,.25);
+  backdrop-filter:blur(10px);
+  box-shadow:0 20px 40px rgba(0,0,0,.5);
+  transition:.4s;
+}
+
+/* capas */
+.t1{top:0; z-index:3}
+.t2{top:25px; transform:rotate(2deg); opacity:.7}
+.t3{top:50px; transform:rotate(-2deg); opacity:.5}
+
+/* hover agresivo */
+.stack:hover .t1{transform:translateY(-12px)}
+.stack:hover .t2{transform:translateY(-6px) rotate(2deg)}
+.stack:hover .t3{transform:translateY(-2px) rotate(-2deg)}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:rgba(255,255,255,.6);
+}
+
+.title{
+  font-size:15px;
+  font-weight:600;
+  color:#4ed3c2;
+}
+
+.price{
+  font-size:18px;
+  font-weight:700;
+  color:#fff;
+}
+
+.barcode{
+  height:10px;
+  background:repeating-linear-gradient(
+    90deg,
+    #4ed3c2 0 2px,
+    transparent 2px 4px
+  );
+  opacity:.7;
+}
+
+.footer{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:rgba(255,255,255,.5);
+}
+
+/* STATS */
+.stats{display:flex;gap:10px}
+
+.stat{
+  flex:1;
+  text-align:center;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,255,255,.03);
+}
+
+.stat b{color:#4ed3c2;font-size:18px}
+
+/* TITULO */
+h1{
+  font-family:Syne;
+  font-size:28px;
+  color:#d1d5db;
+}
+
+h1 span{
+  color:#4ed3c2;
+  text-shadow:0 0 12px rgba(78,211,194,.6);
+}
+
+p{color:rgba(255,255,255,.6);font-size:13px}
+
+/* CTA */
+.cta{
+  margin-top:12px;
+  display:inline-block;
+  padding:12px 18px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#4ed3c2,#1abbb3);
+  color:#003a35;
+  font-weight:700;
+  box-shadow:0 10px 30px rgba(78,211,194,.5);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="tag">ReBoTech · Tickets</div>
+
+<div class="stack">
+
+<div class="ticket t3">
+<div class="header"><span>Evento</span><span>12/07</span></div>
+<div class="title">General</div>
+<div class="price">€20</div>
+<div class="barcode"></div>
+<div class="footer"><span>#A203</span><span>Validado</span></div>
+</div>
+
+<div class="ticket t2">
+<div class="header"><span>Evento</span><span>12/07</span></div>
+<div class="title">VIP</div>
+<div class="price">€60</div>
+<div class="barcode"></div>
+<div class="footer"><span>#B889</span><span>Acceso total</span></div>
+</div>
+
+<div class="ticket t1">
+<div class="header"><span>Evento</span><span>12/07</span></div>
+<div class="title">Confirmado</div>
+<div class="price">Pagado</div>
+<div class="barcode"></div>
+<div class="footer"><span>#X902</span><span>Activo</span></div>
+</div>
+
+</div>
+
+<div class="stats">
+<div class="stat"><b>+500</b><span>entradas</span></div>
+<div class="stat"><b>100%</b><span>digital</span></div>
+<div class="stat"><b>0 colas</b><span>acceso</span></div>
+</div>
+
+<div>
+<h1>Eventos que <span>funcionan solos</span></h1>
+<p>Venta, validación y control en tiempo real sin errores ni colas.</p>
+<div class="cta">Solicitar demo →</div>
+</div>
+
+</div>
+
+</body>
+</html>

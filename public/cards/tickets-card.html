@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Tickets — ReBoTech Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0a00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .card {
+    width: 560px;
+    height: 640px;
+    position: relative;
+    background: #0f0c01;
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 38px 40px;
+  }
+
+  /* Noise texture overlay */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 38px,
+        rgba(251,191,36,0.03) 38px,
+        rgba(251,191,36,0.03) 39px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 38px,
+        rgba(251,191,36,0.03) 38px,
+        rgba(251,191,36,0.03) 39px
+      );
+    pointer-events: none;
+  }
+
+  /* Glow center-top */
+  .glow-top {
+    position: absolute;
+    top: -120px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 300px;
+    background: radial-gradient(ellipse, rgba(251,191,36,0.14) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .glow-br {
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(251,130,36,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.28);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #fbbf24;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-bottom: 26px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .tag-dot {
+    width: 6px; height: 6px;
+    background: #fbbf24;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.3; transform:scale(0.65); }
+  }
+
+  /* Big ticket mockup */
+  .ticket-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 26px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .ticket {
+    width: 100%;
+    background: linear-gradient(135deg, #1a1500 0%, #211b00 100%);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 16px;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Notch left */
+  .ticket::before {
+    content: '';
+    position: absolute;
+    left: 130px; top: -10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #0f0c01;
+    border: 1px solid rgba(251,191,36,0.25);
+  }
+
+  .ticket::after {
+    content: '';
+    position: absolute;
+    left: 130px; bottom: -10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #0f0c01;
+    border: 1px solid rgba(251,191,36,0.25);
+  }
+
+  .ticket-left {
+    width: 130px;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-right: 1px dashed rgba(251,191,36,0.2);
+    flex-shrink: 0;
+  }
+
+  /* QR code SVG */
+  .qr {
+    width: 64px; height: 64px;
+  }
+
+  .ticket-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(251,191,36,0.5);
+    letter-spacing: 0.08em;
+  }
+
+  .ticket-right {
+    flex: 1;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .ticket-event {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .ticket-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(251,191,36,0.6);
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .ticket-meta {
+    display: flex;
+    gap: 10px;
+  }
+
+  .ticket-pill {
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 100px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .ticket-pill.valid {
+    background: rgba(74,222,128,0.1);
+    border-color: rgba(74,222,128,0.3);
+    color: #4ade80;
+  }
+
+  /* Use cases */
+  .usecases {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .usecase {
+    flex: 1;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 11px 10px;
+    text-align: center;
+  }
+
+  .usecase-icon { font-size: 18px; margin-bottom: 5px; }
+
+  .usecase-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.3;
+  }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.25s ease both;
+  }
+
+  .stat {
+    flex: 1;
+    background: rgba(251,191,36,0.05);
+    border: 1px solid rgba(251,191,36,0.12);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fbbf24;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Title */
+  .title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .title span { color: #fbbf24; }
+
+  .desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.6;
+    margin-bottom: 22px;
+    font-weight: 300;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  /* CTA */
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #0a0800;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 11px 22px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(251,191,36,0.3);
+  }
+
+  .brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="glow-top"></div>
+  <div class="glow-br"></div>
+
+  <!-- Tag -->
+  <div class="tag">
+    <span class="tag-dot"></span>
+    ReBoTech Solutions · Eventos
+  </div>
+
+  <!-- Ticket mockup -->
+  <div class="ticket-wrap">
+    <div class="ticket">
+      <div class="ticket-left">
+        <!-- QR SVG generado -->
+        <svg class="qr" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- QR pattern simulado -->
+          <rect x="2" y="2" width="24" height="24" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
+          <rect x="6" y="6" width="16" height="16" rx="1" fill="#fbbf24" opacity="0.6"/>
+          <rect x="38" y="2" width="24" height="24" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
+          <rect x="42" y="6" width="16" height="16" rx="1" fill="#fbbf24" opacity="0.6"/>
+          <rect x="2" y="38" width="24" height="24" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
+          <rect x="6" y="42" width="16" height="16" rx="1" fill="#fbbf24" opacity="0.6"/>
+          <!-- Data modules -->
+          <rect x="30" y="30" width="4" height="4" fill="#fbbf24" opacity="0.8"/>
+          <rect x="36" y="30" width="4" height="4" fill="#fbbf24" opacity="0.5"/>
+          <rect x="42" y="30" width="4" height="4" fill="#fbbf24" opacity="0.8"/>
+          <rect x="48" y="30" width="4" height="4" fill="#fbbf24" opacity="0.3"/>
+          <rect x="54" y="30" width="4" height="4" fill="#fbbf24" opacity="0.7"/>
+          <rect x="30" y="36" width="4" height="4" fill="#fbbf24" opacity="0.4"/>
+          <rect x="36" y="36" width="4" height="4" fill="#fbbf24" opacity="0.9"/>
+          <rect x="48" y="36" width="4" height="4" fill="#fbbf24" opacity="0.6"/>
+          <rect x="30" y="42" width="4" height="4" fill="#fbbf24" opacity="0.7"/>
+          <rect x="42" y="42" width="4" height="4" fill="#fbbf24" opacity="0.5"/>
+          <rect x="54" y="42" width="4" height="4" fill="#fbbf24" opacity="0.9"/>
+          <rect x="36" y="48" width="4" height="4" fill="#fbbf24" opacity="0.6"/>
+          <rect x="48" y="48" width="4" height="4" fill="#fbbf24" opacity="0.4"/>
+          <rect x="30" y="54" width="4" height="4" fill="#fbbf24" opacity="0.8"/>
+          <rect x="42" y="54" width="4" height="4" fill="#fbbf24" opacity="0.5"/>
+          <rect x="54" y="54" width="4" height="4" fill="#fbbf24" opacity="0.7"/>
+        </svg>
+        <div class="ticket-id">#TK-2026-004</div>
+      </div>
+      <div class="ticket-right">
+        <div>
+          <div class="ticket-event">Congreso Tech Valencia 2026</div>
+          <div class="ticket-date">SAB 18 OCT · 09:00h · Palacio de Congresos</div>
+        </div>
+        <div class="ticket-meta">
+          <div class="ticket-pill">Entrada General</div>
+          <div class="ticket-pill valid">✓ Válido</div>
+          <div class="ticket-pill">Fila A · 12</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Casos de uso -->
+  <div class="usecases">
+    <div class="usecase">
+      <div class="usecase-icon">🎵</div>
+      <div class="usecase-label">Conciertos y festivales</div>
+    </div>
+    <div class="usecase">
+      <div class="usecase-icon">🎤</div>
+      <div class="usecase-label">Charlas y congresos</div>
+    </div>
+    <div class="usecase">
+      <div class="usecase-icon">🎟️</div>
+      <div class="usecase-label">Cupo limitado</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">0s</div>
+      <div class="stat-label">Validación en puerta</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Sin duplicados</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Aforo escalable</div>
+    </div>
+  </div>
+
+  <!-- Title & desc -->
+  <div class="title">Sistema de <span>tickets</span></div>
+  <div class="desc">Del pago al escaneo en puerta: vende, valida y controla accesos sin fricción ni hojas de Excel.</div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="cta-btn">Solicitar demo →</div>
+    <div class="brand">rebotechsolutions.vercel.app</div>
+  </div>
+
+</div>
+
+</body>
+</html>
