@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FarmaFácil — ReBoTech Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f0f2f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .card {
+    width: 560px;
+    height: 640px;
+    position: relative;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  /* Top banner */
+  .banner {
+    background: linear-gradient(120deg, #0b4d3b 0%, #166a52 60%, #1a7a60 100%);
+    padding: 28px 36px 24px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .banner::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .banner::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 40%;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+
+  .banner-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo-area {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .logo-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 100px;
+    padding: 5px 13px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+  }
+
+  .banner-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 21px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+    max-width: 380px;
+  }
+
+  .banner-headline em {
+    font-style: normal;
+    color: #6ee7be;
+  }
+
+  /* Body */
+  .body {
+    flex: 1;
+    padding: 28px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Three pillars */
+  .pillars {
+    display: flex;
+    gap: 10px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .pillar {
+    flex: 1;
+    border: 1px solid #e8ecef;
+    border-radius: 12px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #fafbfc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .pillar:hover {
+    border-color: #0b4d3b;
+    box-shadow: 0 4px 14px rgba(11,77,59,0.08);
+  }
+
+  .pillar-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .pillar-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1a2e28;
+    line-height: 1.3;
+  }
+
+  .pillar-desc {
+    font-size: 11px;
+    color: #7a8c87;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  /* How it works - horizontal steps */
+  .how-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #9aada8;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+
+  .steps-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+
+  .step-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .step-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #f0f6f4;
+    border: 1.5px solid #c8ddd8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    color: #0b4d3b;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+  }
+
+  .step-txt {
+    font-size: 11px;
+    color: #5a6e6a;
+    line-height: 1.4;
+    max-width: 80px;
+  }
+
+  .step-arrow {
+    flex: 0 0 20px;
+    text-align: center;
+    color: #c8ddd8;
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+
+  /* Stats row */
+  .stats {
+    display: flex;
+    gap: 0;
+    border: 1px solid #e8ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    animation: fadeUp 0.5s 0.25s ease both;
+  }
+
+  .stat {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    border-right: 1px solid #e8ecef;
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0b4d3b;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: #9aada8;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* Footer strip */
+  .footer-strip {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid #e8ecef;
+    animation: fadeUp 0.5s 0.3s ease both;
+  }
+
+  .by-rebotech {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .rb-dot {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #0b4d3b, #1a7a60);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    color: #fff;
+  }
+
+  .rb-text {
+    font-size: 11px;
+    color: #9aada8;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .cta-btn {
+    background: #0b4d3b;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Banner corporativo -->
+  <div class="banner">
+    <div class="banner-top">
+      <div class="logo-area">
+        <div class="logo-name">FarmaFácil</div>
+        <div class="logo-sub">by ReBoTech Solutions</div>
+      </div>
+      <div class="badge">⭐ Destacado</div>
+    </div>
+    <div class="banner-headline">
+      Digitaliza tu farmacia<br>
+      <em>desde el primer día,</em> sin complicaciones
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Tres pilares del producto -->
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-icon">📱</div>
+        <div class="pillar-title">Catálogo digital</div>
+        <div class="pillar-desc">Tus clientes consultan productos y ofertas con un QR</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🖥️</div>
+        <div class="pillar-title">Kiosko en tienda</div>
+        <div class="pillar-desc">Pedidos sin cola, flujo claro tipo autoservicio</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🤖</div>
+        <div class="pillar-title">Asistente IA</div>
+        <div class="pillar-desc">Responde lo repetitivo y te devuelve tiempo en mostrador</div>
+      </div>
+    </div>
+
+    <!-- Cómo funciona -->
+    <div>
+      <div class="how-label">Cómo funciona</div>
+      <div class="steps-row">
+        <div class="step-item">
+          <div class="step-circle">1</div>
+          <div class="step-txt">Cliente escanea el QR</div>
+        </div>
+        <div class="step-arrow">›</div>
+        <div class="step-item">
+          <div class="step-circle">2</div>
+          <div class="step-txt">Consulta o hace el pedido</div>
+        </div>
+        <div class="step-arrow">›</div>
+        <div class="step-item">
+          <div class="step-circle">3</div>
+          <div class="step-txt">Recoge en mostrador</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">−60%</div>
+        <div class="stat-label">Interrupciones</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">+30%</div>
+        <div class="stat-label">Ticket medio</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Instalaciones</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">24h</div>
+        <div class="stat-label">Puesta en marcha</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-strip">
+      <div class="by-rebotech">
+        <div class="rb-dot">R</div>
+        <div class="rb-text">rebotechsolutions.vercel.app</div>
+      </div>
+      <div class="cta-btn">Solicitar demo gratuita →</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

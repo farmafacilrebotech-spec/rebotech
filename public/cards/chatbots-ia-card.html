@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chatbots IA — ReBoTech Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #060b14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .card {
+    width: 560px;
+    height: 640px;
+    position: relative;
+    background: #070d1a;
+    border: 1px solid rgba(0, 210, 180, 0.18);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+  }
+
+  /* Grid background */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,210,180,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,210,180,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* Glow top-right */
+  .glow-tr {
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(0,210,180,0.22) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Glow bottom-left */
+  .glow-bl {
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(30, 80, 220, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(0,210,180,0.1);
+    border: 1px solid rgba(0,210,180,0.3);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #00d2b4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .tag-dot {
+    width: 6px; height: 6px;
+    background: #00d2b4;
+    border-radius: 50%;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* Chat mockup */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  .bubble {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .bubble.bot { flex-direction: row; }
+  .bubble.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .avatar.bot-av {
+    background: linear-gradient(135deg, #00d2b4, #0080ff);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .avatar.user-av {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 11px;
+  }
+
+  .msg {
+    max-width: 72%;
+    padding: 10px 15px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .bot .msg {
+    background: rgba(0,210,180,0.08);
+    border: 1px solid rgba(0,210,180,0.2);
+    color: #c8fff8;
+    border-top-left-radius: 4px;
+  }
+
+  .user .msg {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e0e8ff;
+    border-top-right-radius: 4px;
+    text-align: right;
+  }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.7;
+  }
+
+  .dots {
+    display: flex; gap: 4px; padding: 10px 14px;
+    background: rgba(0,210,180,0.07);
+    border: 1px solid rgba(0,210,180,0.15);
+    border-radius: 14px;
+    border-top-left-radius: 4px;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    background: #00d2b4;
+    border-radius: 50%;
+    animation: bounce 1.2s ease infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.4; }
+    50% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* Stats row */
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .stat {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #00d2b4;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Title & description */
+  .title {
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+
+  .title span {
+    color: #00d2b4;
+  }
+
+  .desc {
+    font-size: 13.5px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    font-weight: 300;
+    animation: fadeUp 0.7s 0.35s ease both;
+  }
+
+  /* CTA */
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.7s 0.4s ease both;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #00d2b4, #00a896);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 11px 22px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+  }
+
+  .brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Decorative circuit lines */
+  .circuit {
+    position: absolute;
+    top: 0; right: 0;
+    width: 200px; height: 200px;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="glow-tr"></div>
+  <div class="glow-bl"></div>
+
+  <!-- Decorative SVG circuit -->
+  <svg class="circuit" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="160" cy="40" r="30" stroke="#00d2b4" stroke-width="1"/>
+    <line x1="160" y1="10" x2="160" y2="0" stroke="#00d2b4" stroke-width="1"/>
+    <line x1="190" y1="40" x2="200" y2="40" stroke="#00d2b4" stroke-width="1"/>
+    <line x1="160" y1="70" x2="160" y2="120" stroke="#00d2b4" stroke-width="1"/>
+    <line x1="160" y1="120" x2="100" y2="120" stroke="#00d2b4" stroke-width="1"/>
+    <circle cx="100" cy="120" r="4" fill="#00d2b4"/>
+    <line x1="100" y1="120" x2="40" y2="120" stroke="#00d2b4" stroke-width="1"/>
+    <circle cx="40" cy="120" r="6" stroke="#00d2b4" stroke-width="1"/>
+    <line x1="40" y1="114" x2="40" y2="80" stroke="#00d2b4" stroke-width="1"/>
+    <line x1="130" y1="40" x2="60" y2="40" stroke="#00d2b4" stroke-width="1"/>
+    <circle cx="60" cy="40" r="4" fill="#00d2b4" opacity="0.5"/>
+  </svg>
+
+  <!-- Tag -->
+  <div class="tag">
+    <span class="tag-dot"></span>
+    ReBoTech Solutions · IA
+  </div>
+
+  <!-- Chat mockup -->
+  <div class="chat-area">
+    <div class="bubble bot" style="animation-delay:0.1s">
+      <div class="avatar bot-av">⚡</div>
+      <div class="msg">¡Hola! ¿En qué puedo ayudarte hoy?</div>
+    </div>
+    <div class="bubble user" style="animation-delay:0.25s">
+      <div class="avatar user-av">U</div>
+      <div class="msg">Quiero información sobre vuestros precios</div>
+    </div>
+    <div class="bubble bot" style="animation-delay:0.4s">
+      <div class="avatar bot-av">⚡</div>
+      <div class="msg">Claro, tenemos planes desde 49€/mes. ¿Quieres que te envíe el detalle por email?</div>
+    </div>
+    <div class="typing">
+      <div class="avatar bot-av" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#00d2b4,#0080ff);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">⚡</div>
+      <div class="dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">Disponible</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">-80%</div>
+      <div class="stat-label">Carga soporte</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3x</div>
+      <div class="stat-label">Leads captados</div>
+    </div>
+  </div>
+
+  <!-- Title -->
+  <div class="title">Chatbots con <span>IA</span></div>
+  <div class="desc">Respuestas instantáneas, calificación de leads y soporte de primer nivel sin multiplicar plantilla.</div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="cta-btn">Solicitar demo →</div>
+    <div class="brand">rebotechsolutions.vercel.app</div>
+  </div>
+</div>
+
+</body>
+</html>

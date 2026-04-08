@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automatización — ReBoTech Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #080910;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .card {
+    width: 560px;
+    height: 640px;
+    position: relative;
+    background: #0a0c14;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+  }
+
+  /* Dot grid */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(99,102,241,0.12) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+
+  .glow-tl {
+    position: absolute;
+    top: -100px; left: -60px;
+    width: 340px; height: 280px;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .glow-br {
+    position: absolute;
+    bottom: -80px; right: -60px;
+    width: 260px; height: 220px;
+    background: radial-gradient(ellipse, rgba(236, 72, 153, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #a5b4fc;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-bottom: 26px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .tag-dot {
+    width: 6px; height: 6px;
+    background: #818cf8;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.3; transform:scale(0.65); }
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 26px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .node-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    position: relative;
+  }
+
+  .node-icon.crm   { background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); }
+  .node-icon.mail  { background: rgba(236,72,153,0.1);  border: 1px solid rgba(236,72,153,0.25); }
+  .node-icon.sheet { background: rgba(34,197,94,0.1);   border: 1px solid rgba(34,197,94,0.25); }
+  .node-icon.slack { background: rgba(251,191,36,0.1);  border: 1px solid rgba(251,191,36,0.25); }
+
+  .node-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.05em;
+  }
+
+  /* Animated connector */
+  .connector {
+    flex: 0 0 30px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(99,102,241,0.5), rgba(99,102,241,0.15));
+    position: relative;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+
+  .connector::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -100%;
+    width: 60%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #818cf8, transparent);
+    animation: flow-anim 2s linear infinite;
+  }
+
+  @keyframes flow-anim {
+    from { left: -60%; }
+    to   { left: 110%; }
+  }
+
+  /* Process steps */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: border-color 0.3s;
+  }
+
+  .step:hover { border-color: rgba(99,102,241,0.3); }
+
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #818cf8;
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.4;
+  }
+
+  .step-text strong {
+    color: rgba(255,255,255,0.9);
+    font-weight: 400;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(99,102,241,0.06);
+    border: 1px solid rgba(99,102,241,0.15);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.25s ease both;
+  }
+
+  .status-left {
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .status-indicator {
+    width: 8px; height: 8px;
+    background: #4ade80;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #4ade80;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .status-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .status-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #a5b4fc;
+  }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .stat {
+    flex: 1;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #818cf8;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Title */
+  .title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  .title span { color: #818cf8; }
+
+  .desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.6;
+    margin-bottom: 22px;
+    font-weight: 300;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  /* CTA */
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.6s 0.45s ease both;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 11px 22px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+  }
+
+  .brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="glow-tl"></div>
+  <div class="glow-br"></div>
+
+  <!-- Tag -->
+  <div class="tag">
+    <span class="tag-dot"></span>
+    ReBoTech Solutions · Automatización
+  </div>
+
+  <!-- Flow diagram -->
+  <div class="flow">
+    <div class="node">
+      <div class="node-icon crm">🗂️</div>
+      <div class="node-label">CRM</div>
+    </div>
+    <div class="connector"></div>
+    <div class="node">
+      <div class="node-icon mail">📧</div>
+      <div class="node-label">Email</div>
+    </div>
+    <div class="connector"></div>
+    <div class="node">
+      <div class="node-icon sheet">📊</div>
+      <div class="node-label">Datos</div>
+    </div>
+    <div class="connector"></div>
+    <div class="node">
+      <div class="node-icon slack">🔔</div>
+      <div class="node-label">Alertas</div>
+    </div>
+  </div>
+
+  <!-- Process steps -->
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Mapeo del proceso</strong> — detectamos cuellos de botella y disparadores</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Integración y pruebas</strong> — flujos robustos con validación y alertas</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Operación continua</strong> — documentación y ajustes con tu negocio</div>
+    </div>
+  </div>
+
+  <!-- Live status bar -->
+  <div class="status-bar">
+    <div class="status-left">
+      <div class="status-indicator"></div>
+      <div class="status-text">Flujos activos ahora mismo</div>
+    </div>
+    <div class="status-count">247 tareas automatizadas hoy</div>
+  </div>
+
+  <!-- Title & desc -->
+  <div class="title">Automatización<br>de <span>procesos</span></div>
+  <div class="desc">Conectamos tus herramientas para que los datos fluyan solos y el equipo deje de copiar y pegar.</div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="cta-btn">Solicitar diagnóstico →</div>
+    <div class="brand">rebotechsolutions.vercel.app</div>
+  </div>
+</div>
+
+</body>
+</html>

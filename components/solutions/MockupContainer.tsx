@@ -41,11 +41,14 @@ export function MockupContainer({
           />
         ) : (
           children ?? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center">
-              <div className="h-14 w-24 rounded-lg border-2 border-dashed border-rebo-primary/35 bg-rebo-primary/[0.06]" />
-              <p className="text-sm font-medium text-rebo-muted">
-                {caption ?? "Espacio para mockup / captura"}
-              </p>
+            <div className="absolute inset-0 flex items-center justify-center p-6">
+              <Image
+                src="/mockup-clean.png"
+                alt={alt || caption || "ReBoTech Solutions mockup"}
+                width={900}
+                height={600}
+                className="h-auto w-full rounded-2xl object-contain shadow-2xl"
+              />
             </div>
           )
         )}

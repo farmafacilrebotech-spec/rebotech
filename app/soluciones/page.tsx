@@ -1,4 +1,5 @@
 import { SiteChrome } from "@/components/layout/SiteChrome";
+import { SolutionsGrid } from "@/components/SolutionsGrid";
 import { SolutionCard } from "@/components/solutions/SolutionCard";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -37,6 +38,7 @@ export default function SolucionesPage() {
 
       <div className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl space-y-20">
+          <SolutionsGrid />
           {solutionGroups.map((group) => (
             <section key={group.id} aria-labelledby={`hub-${group.id}`}>
               <h2 id={`hub-${group.id}`} className="text-2xl font-bold text-rebo-ink">
