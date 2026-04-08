@@ -1,8 +1,8 @@
 import type { SolutionPageModel } from "@/lib/solutions";
-import Link from "next/link";
+import { getSolutionCardHtmlPath } from "@/lib/solutionMockup";
+import { PrimaryLeadCTA } from "@/components/leads/LeadModalProvider";
 import { CTASection } from "./CTASection";
 import { FeatureList } from "./FeatureList";
-import { MockupContainer } from "./MockupContainer";
 import { SectionTitle } from "./SectionTitle";
 
 export function SolutionPageView({ solution }: { solution: SolutionPageModel }) {
@@ -26,12 +26,11 @@ export function SolutionPageView({ solution }: { solution: SolutionPageModel }) 
             {solution.hero.subtitle}
           </p>
           <div className="mt-10">
-            <Link
+            <PrimaryLeadCTA
+              solutionName={solution.name}
               href={solution.hero.ctaHref}
-              className="inline-flex rounded-2xl bg-rebo-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-rebo-primary/25 transition hover:bg-[#159a94] hover:shadow-xl"
-            >
-              {solution.hero.ctaLabel}
-            </Link>
+              label={solution.hero.ctaLabel}
+            />
           </div>
         </div>
       </section>
@@ -88,14 +87,18 @@ export function SolutionPageView({ solution }: { solution: SolutionPageModel }) 
             eyebrow="Producto"
             id="solution-visual-title"
             title="Vista del producto"
-            description="Aquí podrás colocar capturas reales o vídeo. De momento mostramos un contenedor listo para diseño."
+            description="Interacción visual del producto en un mockup interactivo."
             align="center"
           />
           <div className="mt-10">
-            <MockupContainer
-              aspect="video"
-              caption={`Mockup — ${solution.name}`}
-            />
+            <div className="solution-mockup-frame">
+              <iframe
+                src={getSolutionCardHtmlPath(solution.slug)}
+                title={`Vista previa — ${solution.name}`}
+                className="solution-mockup-iframe"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -124,6 +127,7 @@ export function SolutionPageView({ solution }: { solution: SolutionPageModel }) 
             subtitle={solution.finalCta.subtitle}
             primaryLabel={solution.finalCta.primaryLabel}
             primaryHref={solution.finalCta.primaryHref}
+            openLeadForSolution={solution.name}
             secondaryLabel={solution.finalCta.secondaryLabel}
             secondaryHref={solution.finalCta.secondaryHref}
           />
