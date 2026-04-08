@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
+/* ReBoTech — paleta conversión SaaS (sin lilas/rosas) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --rebo-primary: #1abbb3;
+  --rebo-turquoise: #4ed3c2;
+  --rebo-primary-soft: color-mix(in srgb, var(--rebo-primary) 12%, white);
+  --rebo-ink: #1d1c1c;
+  --rebo-muted: #5a5a5a;
+  --rebo-faint: #8a9399;
+  --rebo-bg: #f5f7fa;
+  --rebo-subtle: #e6eef5;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-rebo-primary: var(--rebo-primary);
+  --color-rebo-turquoise: var(--rebo-turquoise);
+  --color-rebo-ink: var(--rebo-ink);
+  --color-rebo-muted: var(--rebo-muted);
+  --color-rebo-faint: var(--rebo-faint);
+  --color-rebo-bg: var(--rebo-bg);
+  --color-rebo-subtle: var(--rebo-subtle);
+  --font-sans: var(--font-plus-jakarta);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background: var(--rebo-bg);
+  color: var(--rebo-ink);
+  font-family: var(--font-plus-jakarta), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--rebo-primary) 22%, transparent);
+  color: var(--rebo-ink);
 }
