@@ -8,7 +8,6 @@ type LeadBody = {
   telefono?: string;
   tipo_negocio?: string;
   mensaje?: string;
-  /** Solución / producto (modal de leads en soluciones) */
   solucion?: string;
   producto?: string;
 };
@@ -17,10 +16,16 @@ function isNonEmpty(s: unknown): s is string {
   return typeof s === "string" && s.trim().length > 0;
 }
 
-export async function POST(request: Request) {
+/** URL del despliegue como app web (debe terminar en /exec). */
+const GOOGLE_SCRIPT_URL =
+  process.env.GOOGLE_APPS_SCRIPT_URL?.trim() ??
+  process.env.GOOGLE_SCRIPT_URL?.trim() ??
+  "";
+
+export async function POST(req: Request) {
   let body: LeadBody;
   try {
-    body = (await request.json()) as LeadBody;
+    body = (await req.json()) as LeadBody;
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
@@ -51,11 +56,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email no válido." }, { status: 400 });
   }
 
-  const endpoint = process.env.GOOGLE_APPS_SCRIPT_URL?.trim() ?? "";
-
-  if (endpoint) {
-    if (!endpoint.endsWith("/exec")) {
-      console.error("[leads] GOOGLE_APPS_SCRIPT_URL debe terminar en /exec");
+  if (GOOGLE_SCRIPT_URL) {
+    if (!GOOGLE_SCRIPT_URL.endsWith("/exec")) {
+      console.error("[leads] La URL de Apps Script debe terminar en /exec");
       return NextResponse.json(
         { error: "Configuración del servidor incompleta." },
         { status: 500 },
@@ -74,28 +77,28 @@ export async function POST(request: Request) {
     };
 
     try {
-      const appsRes = await fetch(endpoint, {
+      const res = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         cache: "no-store",
       });
 
-      if (!appsRes.ok) {
-        const t = await appsRes.text();
-        console.error("[leads] Apps Script error:", appsRes.status, t);
+      if (!res.ok) {
+        const t = await res.text();
+        console.error("[leads] Apps Script error:", res.status, t);
         return NextResponse.json(
-          { error: "No se pudo registrar la solicitud. Inténtalo de nuevo." },
+          { error: "Error enviando lead" },
           { status: 502 },
         );
       }
 
-      return NextResponse.json({ ok: true, forwarded: true });
-    } catch (e) {
-      console.error("[leads] Apps Script fetch failed:", e);
+      return NextResponse.json({ success: true, ok: true });
+    } catch (error) {
+      console.error("[leads] Apps Script fetch failed:", error);
       return NextResponse.json(
-        { error: "No se pudo conectar con el servicio de formularios." },
-        { status: 502 },
+        { error: "Error enviando lead" },
+        { status: 500 },
       );
     }
   }
@@ -126,7 +129,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true, stored: true });
+    return NextResponse.json({ success: true, ok: true, stored: true });
   }
 
   console.info("[leads] Demo mode — configure GOOGLE_APPS_SCRIPT_URL or Supabase", {
@@ -137,5 +140,10 @@ export async function POST(request: Request) {
     mensaje,
   });
 
-  return NextResponse.json({ ok: true, stored: false, demo: true });
+  return NextResponse.json({
+    success: true,
+    ok: true,
+    stored: false,
+    demo: true,
+  });
 }
