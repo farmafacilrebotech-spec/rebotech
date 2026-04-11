@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { PrimaryLeadCTA } from "@/components/leads/LeadModalProvider";
+import {
+  PrimaryLeadCTA,
+  type LeadSolutionContext,
+} from "@/components/leads/LeadModalProvider";
 
 export function CTASection({
   title,
@@ -9,8 +12,8 @@ export function CTASection({
   secondaryLabel,
   secondaryHref,
   variant = "solid",
-  /** Si se indica, el CTA principal abre el modal de leads con esta solución. */
-  openLeadForSolution,
+  /** Si se indica, el CTA principal abre el modal de leads con este id/nombre de solución. */
+  leadSolution,
 }: {
   title: string;
   subtitle?: string;
@@ -19,7 +22,7 @@ export function CTASection({
   secondaryLabel?: string;
   secondaryHref?: string;
   variant?: "solid" | "outline";
-  openLeadForSolution?: string;
+  leadSolution?: LeadSolutionContext;
 }) {
   return (
     <section
@@ -33,7 +36,7 @@ export function CTASection({
         {subtitle ? <p className="mt-4 text-rebo-muted">{subtitle}</p> : null}
         <div className="mt-10 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center">
           <PrimaryLeadCTA
-            solutionName={openLeadForSolution}
+            leadSolution={leadSolution}
             href={primaryHref}
             label={primaryLabel}
             variant={variant}

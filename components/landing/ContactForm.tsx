@@ -14,7 +14,14 @@ function WhatsAppGlyph({ className }: { className?: string }) {
   );
 }
 
-export function ContactForm({ whatsappUrl }: { whatsappUrl: string | null }) {
+export function ContactForm({
+  whatsappUrl,
+  /** Identificador de contexto para el lead (p. ej. `contacto` o el `id` de una solución). */
+  solucion = "contacto",
+}: {
+  whatsappUrl: string | null;
+  solucion?: string;
+}) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -29,6 +36,7 @@ export function ContactForm({ whatsappUrl }: { whatsappUrl: string | null }) {
       email: String(fd.get("email") ?? ""),
       telefono: String(fd.get("telefono") ?? ""),
       mensaje: String(fd.get("mensaje") ?? ""),
+      solucion,
     };
 
     try {

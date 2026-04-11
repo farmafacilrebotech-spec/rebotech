@@ -11,8 +11,10 @@ import {
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
+export type LeadSolutionContext = { id: string; name: string };
+
 type LeadModalContextValue = {
-  open: (solucion: string) => void;
+  open: (solution: LeadSolutionContext) => void;
   close: () => void;
 };
 
@@ -30,19 +32,20 @@ type Status = "idle" | "loading" | "success" | "error";
 
 export function LeadModalProvider({ children }: { children: React.ReactNode }) {
   const [visible, setVisible] = useState(false);
-  const [solucion, setSolucion] = useState("");
+  const [leadSolution, setLeadSolution] = useState<LeadSolutionContext | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const titleId = useId();
 
   const close = useCallback(() => {
     setVisible(false);
+    setLeadSolution(null);
     setStatus("idle");
     setErrorMsg("");
   }, []);
 
-  const open = useCallback((name: string) => {
-    setSolucion(name);
+  const open = useCallback((solution: LeadSolutionContext) => {
+    setLeadSolution(solution);
     setVisible(true);
     setStatus("idle");
     setErrorMsg("");
@@ -75,7 +78,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     const form = e.currentTarget;
     const fd = new FormData(form);
     const payload = {
-      solucion,
+      solucion: leadSolution?.id ?? "",
       nombre: String(fd.get("nombre") ?? "").trim(),
       email: String(fd.get("email") ?? "").trim(),
       telefono: String(fd.get("telefono") ?? "").trim(),
@@ -139,11 +142,19 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <p className="mb-4 text-sm text-white/55">
-              Solución: <span className="font-semibold text-rebo-turquoise">{solucion}</span>
+              Solución:{" "}
+              <span className="font-semibold text-rebo-turquoise">
+                {leadSolution?.name ?? ""}
+              </span>
             </p>
 
             <form onSubmit={handleSubmit} className="lead-form space-y-3">
-              <input type="hidden" name="solucion" value={solucion} readOnly />
+              <input
+                type="hidden"
+                name="solucion"
+                value={leadSolution?.id ?? ""}
+                readOnly
+              />
               <div>
                 <label htmlFor="lead-nombre" className="sr-only">
                   Nombre
@@ -241,12 +252,13 @@ const outlinePrimary =
 
 /** CTA primario: abre modal con solución o navega a href. */
 export function PrimaryLeadCTA({
-  solutionName,
+  leadSolution,
   href,
   label,
   variant = "solid",
 }: {
-  solutionName?: string;
+  /** Si se indica, el CTA abre el modal y el lead envía `id` como solución. */
+  leadSolution?: LeadSolutionContext;
   href: string;
   label: string;
   variant?: "solid" | "outline";
@@ -254,9 +266,9 @@ export function PrimaryLeadCTA({
   const { open } = useLeadModal();
   const cls = variant === "solid" ? solidPrimary : outlinePrimary;
 
-  if (solutionName) {
+  if (leadSolution) {
     return (
-      <button type="button" className={cls} onClick={() => open(solutionName)}>
+      <button type="button" className={cls} onClick={() => open(leadSolution)}>
         {label}
       </button>
     );

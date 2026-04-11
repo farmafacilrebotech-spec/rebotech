@@ -27,7 +27,7 @@ export function SolutionPageView({ solution }: { solution: SolutionPageModel }) 
           </p>
           <div className="mt-10">
             <PrimaryLeadCTA
-              solutionName={solution.name}
+              leadSolution={{ id: solution.id, name: solution.name }}
               href={solution.hero.ctaHref}
               label={solution.hero.ctaLabel}
             />
@@ -127,7 +127,7 @@ export function SolutionPageView({ solution }: { solution: SolutionPageModel }) 
             subtitle={solution.finalCta.subtitle}
             primaryLabel={solution.finalCta.primaryLabel}
             primaryHref={solution.finalCta.primaryHref}
-            openLeadForSolution={solution.name}
+            leadSolution={{ id: solution.id, name: solution.name }}
             secondaryLabel={solution.finalCta.secondaryLabel}
             secondaryHref={solution.finalCta.secondaryHref}
           />

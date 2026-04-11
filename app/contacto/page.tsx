@@ -29,7 +29,7 @@ export default function ContactoPage() {
       </div>
       <div className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-lg rounded-3xl border border-rebo-subtle bg-white p-8 shadow-[0_12px_40px_-16px_rgba(29,28,28,0.1)] sm:p-10">
-          <ContactForm whatsappUrl={whatsappUrl} />
+          <ContactForm whatsappUrl={whatsappUrl} solucion="contacto" />
         </div>
       </div>
     </SiteChrome>

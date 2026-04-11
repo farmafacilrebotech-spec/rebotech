@@ -13,6 +13,8 @@ export type SolutionSlug =
   | "automatizacion";
 
 export type SolutionCardModel = {
+  /** Identificador estable para leads y analítica (coincide con la URL salvo evolución futura). */
+  id: SolutionSlug;
   slug: SolutionSlug;
   name: string;
   description: string;
@@ -51,7 +53,14 @@ export type SolutionPageModel = SolutionCardModel & {
   };
 };
 
-const digital: SolutionPageModel[] = [
+/** Definición en código: el `id` se asigna automáticamente igual que `slug`. */
+export type SolutionPageDef = Omit<SolutionPageModel, "id">;
+
+function withSolutionId(s: SolutionPageDef): SolutionPageModel {
+  return { ...s, id: s.slug };
+}
+
+const digital: SolutionPageDef[] = [
   {
     slug: "farmafacil",
     name: "FarmaFácil",
@@ -209,7 +218,7 @@ const digital: SolutionPageModel[] = [
   },
 ];
 
-const eventos: SolutionPageModel[] = [
+const eventos: SolutionPageDef[] = [
   {
     slug: "tickets",
     name: "Sistema de tickets",
@@ -365,7 +374,7 @@ const eventos: SolutionPageModel[] = [
   },
 ];
 
-const competicion: SolutionPageModel[] = [
+const competicion: SolutionPageDef[] = [
   {
     slug: "torneos",
     name: "Torneos de pádel",
@@ -471,9 +480,9 @@ const competicion: SolutionPageModel[] = [
 ];
 
 export const allSolutions: SolutionPageModel[] = [
-  ...digital,
-  ...eventos,
-  ...competicion,
+  ...digital.map(withSolutionId),
+  ...eventos.map(withSolutionId),
+  ...competicion.map(withSolutionId),
 ];
 
 export const solutionSlugs = allSolutions.map((s) => s.slug) as SolutionSlug[];
