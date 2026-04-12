@@ -13,8 +13,27 @@ import { Loader2 } from "lucide-react";
 
 export type LeadSolutionContext = { id: string; name: string };
 
+export type LeadModalPrefill = {
+  nombre?: string;
+  email?: string;
+  telefono?: string;
+  mensaje?: string;
+};
+
+export type LeadModalDiagnosticoMeta = {
+  score: number;
+  nivel: "bajo" | "medio" | "alto";
+};
+
+export type LeadModalOpenArgs = {
+  id: string;
+  name: string;
+  prefill?: LeadModalPrefill;
+  diagnostico?: LeadModalDiagnosticoMeta;
+};
+
 type LeadModalContextValue = {
-  open: (solution: LeadSolutionContext) => void;
+  open: (args: LeadModalOpenArgs) => void;
   close: () => void;
 };
 
@@ -33,6 +52,9 @@ type Status = "idle" | "loading" | "success" | "error";
 export function LeadModalProvider({ children }: { children: React.ReactNode }) {
   const [visible, setVisible] = useState(false);
   const [leadSolution, setLeadSolution] = useState<LeadSolutionContext | null>(null);
+  const [prefill, setPrefill] = useState<LeadModalPrefill | null>(null);
+  const [diagnosticoMeta, setDiagnosticoMeta] = useState<LeadModalDiagnosticoMeta | null>(null);
+  const [formKey, setFormKey] = useState(0);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const titleId = useId();
@@ -40,12 +62,17 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
   const close = useCallback(() => {
     setVisible(false);
     setLeadSolution(null);
+    setPrefill(null);
+    setDiagnosticoMeta(null);
     setStatus("idle");
     setErrorMsg("");
   }, []);
 
-  const open = useCallback((solution: LeadSolutionContext) => {
-    setLeadSolution(solution);
+  const open = useCallback((args: LeadModalOpenArgs) => {
+    setLeadSolution({ id: args.id, name: args.name });
+    setPrefill(args.prefill ?? null);
+    setDiagnosticoMeta(args.diagnostico ?? null);
+    setFormKey((k) => k + 1);
     setVisible(true);
     setStatus("idle");
     setErrorMsg("");
@@ -77,13 +104,18 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     setErrorMsg("");
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const payload = {
+    const payload: Record<string, string | number> = {
       solucion: leadSolution?.id ?? "",
       nombre: String(fd.get("nombre") ?? "").trim(),
       email: String(fd.get("email") ?? "").trim(),
       telefono: String(fd.get("telefono") ?? "").trim(),
       mensaje: String(fd.get("mensaje") ?? "").trim(),
     };
+
+    if (diagnosticoMeta) {
+      payload.diagnostico_score = diagnosticoMeta.score;
+      payload.diagnostico_nivel = diagnosticoMeta.nivel;
+    }
 
     try {
       const res = await fetch("/api/leads", {
@@ -109,6 +141,8 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
       setStatus("error");
     }
   }
+
+  const p = prefill ?? {};
 
   return (
     <LeadModalContext.Provider value={{ open, close }}>
@@ -148,13 +182,8 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
               </span>
             </p>
 
-            <form onSubmit={handleSubmit} className="lead-form space-y-3">
-              <input
-                type="hidden"
-                name="solucion"
-                value={leadSolution?.id ?? ""}
-                readOnly
-              />
+            <form key={formKey} onSubmit={handleSubmit} className="lead-form space-y-3">
+              <input type="hidden" name="solucion" value={leadSolution?.id ?? ""} readOnly />
               <div>
                 <label htmlFor="lead-nombre" className="sr-only">
                   Nombre
@@ -166,6 +195,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
                   autoComplete="name"
                   placeholder="Nombre"
                   className="lead-input"
+                  defaultValue={p.nombre ?? ""}
                 />
               </div>
               <div>
@@ -180,6 +210,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
                   autoComplete="email"
                   placeholder="Email"
                   className="lead-input"
+                  defaultValue={p.email ?? ""}
                 />
               </div>
               <div>
@@ -193,6 +224,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
                   autoComplete="tel"
                   placeholder="Teléfono"
                   className="lead-input"
+                  defaultValue={p.telefono ?? ""}
                 />
               </div>
               <div>
@@ -205,6 +237,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
                   rows={4}
                   placeholder="Cuéntanos qué necesitas"
                   className="lead-input min-h-[100px] resize-y"
+                  defaultValue={p.mensaje ?? ""}
                 />
               </div>
 
@@ -268,7 +301,11 @@ export function PrimaryLeadCTA({
 
   if (leadSolution) {
     return (
-      <button type="button" className={cls} onClick={() => open(leadSolution)}>
+      <button
+        type="button"
+        className={cls}
+        onClick={() => open({ id: leadSolution.id, name: leadSolution.name })}
+      >
         {label}
       </button>
     );

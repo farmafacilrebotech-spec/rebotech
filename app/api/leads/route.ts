@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxukDry8Stb6rwOuArdxkP1nweo5URG5XvnLFemUh0imuAjhqF2ueQMa6qSr4AIfaNVbg/exec";
 
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
