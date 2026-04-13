@@ -141,7 +141,7 @@ const digital: SolutionPageDef[] = [
         description: "Qué debe resolver el bot, qué escalar a humano y qué datos captar.",
       },
       {
-        title: "Entrenamiento y integración",
+        title: "Entrenamiento y configuración",
         description: "Conocimiento de tu negocio conectado a tus canales reales.",
       },
       {

@@ -58,7 +58,7 @@ export function StrongCta() {
             transition={{ type: "spring", stiffness: 380, damping: 22 }}
           >
             <Link
-              href="/contacto"
+              href="/diagnostico"
               className="inline-flex items-center gap-3 rounded-2xl bg-white px-14 py-5 text-lg font-bold text-rebo-primary shadow-xl shadow-black/10 ring-4 ring-white/35 transition-[box-shadow,ring-color] duration-300 hover:ring-white/60 hover:shadow-2xl hover:shadow-black/15"
             >
               Solicitar diagnóstico gratuito
