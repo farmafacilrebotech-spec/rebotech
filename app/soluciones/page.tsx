@@ -28,7 +28,7 @@ export default function SolucionesPage() {
             funcionamiento y casos de uso.
           </p>
           <Link
-            href="/contacto"
+            href="/diagnostico"
             className="mt-10 inline-flex rounded-2xl bg-rebo-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-rebo-primary/25 transition hover:bg-[#159a94]"
           >
             Solicitar diagnóstico

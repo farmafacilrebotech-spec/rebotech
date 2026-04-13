@@ -53,10 +53,11 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.05, ease: textEase }}
             className="text-balance text-4xl font-bold tracking-tight text-rebo-ink sm:text-5xl lg:text-[3.15rem] lg:leading-[1.12]"
           >
-            Digitalizamos tu negocio de forma{" "}
+            Automatiza tu negocio y deja de{" "}
             <span className="bg-gradient-to-r from-rebo-primary to-rebo-turquoise bg-clip-text text-transparent">
-              simple y efectiva
-            </span>
+              perder tiempo
+            </span>{" "}
+            en tareas manuales
           </motion.h1>
 
           <motion.p
@@ -65,8 +66,18 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.12, ease: textEase }}
             className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-rebo-muted sm:text-xl lg:mx-0"
           >
-            Automatización, inteligencia artificial y soluciones reales para
-            empresas que quieren crecer.
+            Implementamos soluciones reales de automatización e inteligencia
+            artificial para que ahorres tiempo, reduzcas errores y aumentes tus
+            ingresos.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.16, ease: textEase }}
+            className="mx-auto mt-4 max-w-xl text-sm font-semibold text-rebo-ink/80 sm:text-base lg:mx-0"
+          >
+            En menos de 2 minutos te mostramos qué puedes mejorar en tu negocio.
           </motion.p>
 
           <motion.div
@@ -81,7 +92,7 @@ export function Hero() {
               transition={{ type: "spring", stiffness: 400, damping: 22 }}
             >
               <Link
-                href="/contacto"
+                href="/diagnostico"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rebo-primary px-8 py-4 text-base font-semibold text-white shadow-lg shadow-rebo-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-rebo-primary/45 sm:w-auto"
               >
                 Solicitar diagnóstico
@@ -94,7 +105,7 @@ export function Hero() {
               transition={{ type: "spring", stiffness: 400, damping: 22 }}
             >
               <Link
-                href="/#soluciones"
+                href="/soluciones"
                 className="inline-flex w-full items-center justify-center rounded-2xl border border-rebo-subtle bg-white px-8 py-4 text-base font-semibold text-rebo-ink shadow-sm transition-all duration-300 hover:border-rebo-turquoise/50 hover:bg-rebo-bg hover:shadow-md sm:w-auto"
               >
                 Ver soluciones

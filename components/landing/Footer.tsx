@@ -65,7 +65,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/contacto" className={`${footerLink} font-semibold text-rebo-primary`}>
+                <Link href="/diagnostico" className={`${footerLink} font-semibold text-rebo-primary`}>
                   Solicitar diagnóstico
                 </Link>
               </li>

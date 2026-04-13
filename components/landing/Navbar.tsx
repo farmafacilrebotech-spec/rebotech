@@ -10,7 +10,6 @@ const links = [
   { href: "/#servicios", label: "Servicios" },
   { href: "/#soluciones", label: "Productos" },
   { href: "/#proceso", label: "Cómo trabajamos" },
-  { href: "/diagnostico", label: "Diagnóstico" },
   { href: "/contacto", label: "Contacto" },
 ];
 
@@ -66,7 +65,7 @@ export function Navbar() {
           ))}
           <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="ml-2">
             <Link
-              href="/contacto"
+              href="/diagnostico"
               className="inline-flex rounded-2xl bg-rebo-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-rebo-primary/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#159a94] hover:shadow-lg hover:shadow-rebo-primary/35"
             >
               Diagnóstico
@@ -102,7 +101,7 @@ export function Navbar() {
               </Link>
             ))}
             <Link
-              href="/contacto"
+              href="/diagnostico"
               className="mt-2 rounded-2xl bg-rebo-primary py-3.5 text-center text-sm font-semibold text-white shadow-md transition hover:bg-[#159a94]"
               onClick={() => setOpen(false)}
             >
