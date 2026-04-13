@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AssistantWidget } from "@/components/assistant/AssistantWidget";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { LeadModalProvider } from "@/components/leads/LeadModalProvider";
 import { siteUrl } from "@/lib/site";
@@ -66,7 +67,10 @@ export default function RootLayout({
             __html: JSON.stringify(organizationJsonLd),
           }}
         />
-        <LeadModalProvider>{children}</LeadModalProvider>
+        <LeadModalProvider>
+          {children}
+          <AssistantWidget />
+        </LeadModalProvider>
       </body>
     </html>
   );
