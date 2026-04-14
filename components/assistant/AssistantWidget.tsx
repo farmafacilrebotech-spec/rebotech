@@ -9,19 +9,9 @@ type Sector =
   | "restaurante"
   | "clinica"
   | "eventos"
-  | "salud"
-  | "educacion"
-  | "finanzas"
-  | "entretenimiento"
-  | "diseno"
-  | "ingenieria"
-  | "moda"
-  | "turismo"
   | "deportes"
-  | "asesorias"
-  | "retail"
   | "otro";
-type Problema = "ventas" | "atencion" | "tiempo" | "pedidos" | "reservas" | "desconocido";
+type Problema = "ventas" | "atencion" | "tiempo" | "gestion" | "desconocido";
 type NivelInteres = "bajo" | "medio" | "alto";
 type Stage = "discover" | "qualify" | "offer" | "capture_contact" | "capture_name" | "closed";
 type AwaitingField = "none" | "contacto" | "nombre";
@@ -45,6 +35,17 @@ type LeadDraft = {
   problema: Problema;
   interes: NivelInteres;
   mensaje_original: string;
+  businessDescribed: boolean;
+  businessLabel: string;
+};
+
+type AssistantContextPayload = {
+  sector: Sector;
+  problema: Problema;
+  interes: NivelInteres;
+  stage: Stage;
+  awaitingField: AwaitingField;
+  lead: LeadDraft;
 };
 
 const initialLeadDraft: LeadDraft = {
@@ -54,7 +55,22 @@ const initialLeadDraft: LeadDraft = {
   problema: "desconocido",
   interes: "bajo",
   mensaje_original: "",
+  businessDescribed: false,
+  businessLabel: "",
 };
+
+/** Claves que entiende el Apps Script para plantillas de email por servicio. */
+const solucionesValidas = [
+  "chatbots",
+  "qr",
+  "acreditaciones",
+  "farmafacil",
+  "tickets",
+  "padel",
+  "votaciones",
+  "contacto",
+  "diagnostico",
+] as const;
 
 const initialMessages: ChatMessage[] = [
   {
@@ -65,17 +81,9 @@ const initialMessages: ChatMessage[] = [
 ];
 
 const sectorChoices: SectorChoice[] = [
-  { label: "Salud", value: "salud" },
-  { label: "Educación", value: "educacion" },
-  { label: "Finanzas", value: "finanzas" },
-  { label: "Retail", value: "retail" },
-  { label: "Turismo", value: "turismo" },
   { label: "Deportes", value: "deportes" },
-  { label: "Asesorías", value: "asesorias" },
-  { label: "Diseño", value: "diseno" },
-  { label: "Ingeniería", value: "ingenieria" },
-  { label: "Moda", value: "moda" },
   { label: "Restaurante", value: "restaurante" },
+  { label: "Clínica", value: "clinica" },
   { label: "Farmacia", value: "farmacia" },
   { label: "Eventos", value: "eventos" },
 ];
@@ -92,37 +100,19 @@ function isGreetingMessage(input: string) {
 
 function detectSector(input: string): Sector {
   if (/(farmacia|farmacias|farmaceutic)/.test(input)) return "farmacia";
-  if (/(restaurante|bar|cafeteria|comida|delivery)/.test(input)) return "restaurante";
-  if (/(clinica|consulta|paciente|medic)/.test(input)) return "clinica";
-  if (/(evento deportivo|torneo|liga|partido|club deportivo|maraton)/.test(input))
-    return "eventos";
-  if (/(hospital|centro de salud|bienestar|fisioterapia|odontolog)/.test(input))
-    return "salud";
-  if (/(colegio|academia|escuela|universidad|alumno|estudiante)/.test(input))
-    return "educacion";
-  if (/(finanzas|financiero|banco|inversion|contable|seguros)/.test(input))
-    return "finanzas";
-  if (/(cine|teatro|musica|ocio|gaming|streaming|entretenimiento)/.test(input))
-    return "entretenimiento";
-  if (/(diseno|diseño|agencia creativa|branding|ux|ui)/.test(input)) return "diseno";
-  if (/(ingenieria|ingeniería|arquitectura|obra|constructora|industrial)/.test(input))
-    return "ingenieria";
-  if (/(moda|tienda de ropa|boutique|textil|ecommerce de ropa)/.test(input)) return "moda";
-  if (/(hotel|agencia de viajes|turismo|alojamiento|reserva de viajes)/.test(input))
-    return "turismo";
-  if (/(gimnasio|fitness|entrenador|centro deportivo|deportes)/.test(input)) return "deportes";
-  if (/(asesoria|asesoría|consultoria|consultoría|despacho|gestoria|gestoría)/.test(input))
-    return "asesorias";
-  if (/(retail|tienda|comercio|punto de venta|supermercado)/.test(input)) return "retail";
+  if (/(restaurante|bar)\b/.test(input)) return "restaurante";
+  if (/(clinica|clínica|fisio|dentista)/.test(input)) return "clinica";
+  if (/(evento|boda|festival)/.test(input)) return "eventos";
+  if (/(deporte|torneo|padel|pádel)/.test(input)) return "deportes";
+  if (/(pelu|peluqueria|peluquería|estetica|estética|belleza)/.test(input)) return "otro";
   return "otro";
 }
 
 function detectProblema(input: string): Problema {
-  if (/(vender|ventas|conversion|captar|leads)/.test(input)) return "ventas";
-  if (/(llamadas|atencion|responder|consultas|soporte)/.test(input)) return "atencion";
-  if (/(tiempo|lento|manual|horas|operativ)/.test(input)) return "tiempo";
-  if (/(pedido|pedidos|orden|encargo|whatsapp)/.test(input)) return "pedidos";
-  if (/(reserva|reservas|agenda|cita|turno)/.test(input)) return "reservas";
+  if (/(ventas|cobrar|pagar)/.test(input)) return "ventas";
+  if (/(clientes|responder|whatsapp|atencion|atención)/.test(input)) return "atencion";
+  if (/(tiempo|manual|lento)/.test(input)) return "tiempo";
+  if (/(organizar|gestionar|control)/.test(input)) return "gestion";
   return "desconocido";
 }
 
@@ -152,6 +142,23 @@ function parseContacto(input: string) {
   return phone?.trim() ?? "";
 }
 
+function detectBusinessDescription(input: string): string {
+  const patterns = [
+    /(?:tengo|llevo)\s+(?:un|una)\s+([a-zA-ZÀ-ÿ0-9\s]{3,40})/i,
+    /trabajo\s+en\s+(?:un|una)\s+([a-zA-ZÀ-ÿ0-9\s]{3,40})/i,
+    /soy\s+([a-zA-ZÀ-ÿ0-9\s]{3,40})/i,
+    /vendo\s+([a-zA-ZÀ-ÿ0-9\s]{3,40})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = input.match(pattern);
+    if (!match?.[1]) continue;
+    const label = match[1].trim().replace(/[.,;:!?]+$/g, "");
+    if (label.length >= 3) return label;
+  }
+  return "";
+}
+
 function rankInteres(value: NivelInteres) {
   if (value === "alto") return 3;
   if (value === "medio") return 2;
@@ -159,92 +166,58 @@ function rankInteres(value: NivelInteres) {
 }
 
 function buildSectorSolution(sector: Sector, problema: Problema) {
-  const diagnostics: Record<string, Record<Problema, string>> = {
+  const diagnostics: Record<Sector, Record<Problema, string>> = {
     farmacia: {
-      ventas:
-        "Por lo que me cuentas, aquí hay 3 problemas claros: se pierden ventas por falta de seguimiento de clientes, hay reposición reactiva en vez de planificada y no hay campañas segmentadas para recurrencia. Esto normalmente impacta en ticket medio y en clientes que no vuelven.",
-      atencion:
-        "Por lo que me dices, aquí veo 3 problemas claros: exceso de llamadas para consultas repetidas, atención interrumpida en mostrador y tiempos de respuesta desiguales. Esto te hace perder tiempo operativo, genera colas y afecta la experiencia del cliente.",
-      tiempo:
-        "Por lo que dices, aquí hay 3 problemas claros: tareas manuales de registro, doble trabajo entre canales y poca visibilidad diaria del equipo. Eso te quita horas productivas y frena decisiones rápidas.",
-      pedidos:
-        "En ese caso, hay 3 problemas claros: pedidos por múltiples canales sin centralizar, errores al pasar pedidos a preparación y confirmaciones tardías. Eso causa retrabajo, cancelaciones y pérdida de confianza.",
-      reservas:
-        "Por esto, aquí hay 2 problemas claros: coordinación manual de citas/turnos y poca trazabilidad de cambios. Esto suele generar huecos y clientes desatendidos.",
-      desconocido:
-        "Aquí detecto que hay oportunidades claras en atención, pedidos y seguimiento comercial; normalmente ahí se pierde más tiempo y clientes en farmacia.",
+      ventas: "Veo fuga de ventas por falta de seguimiento y recompra.",
+      atencion: "Veo fricción en atención por consultas repetitivas y saturación del equipo.",
+      tiempo: "Veo demasiado trabajo manual que consume horas operativas.",
+      gestion: "Veo desorden operativo y falta de control de flujo diario.",
+      desconocido: "Veo margen claro para mejorar operación y conversión en farmacia.",
     },
     restaurante: {
-      ventas:
-        "Por lo que me cuentas, aquí hay 3 problemas claros: falta de seguimiento post-visita, baja repetición de clientes y poca activación en horas valle. Eso impacta ingresos semanales de forma directa.",
-      atencion:
-        "Por lo que me das, aquí hay 3 problemas claros: saturación en picos, respuestas tardías por WhatsApp y consultas repetitivas que consumen al equipo. Esto te hace perder reservas y pedidos.",
-      tiempo:
-        "Por lo que me dices, aquí veo 2 problemas claros: demasiada coordinación manual y poca automatización de tareas recurrentes. Eso le quita foco al servicio y a la venta.",
-      pedidos:
-        "Por esto, aquí hay 3 problemas claros: pedidos dispersos por canal, errores de captura y confirmaciones lentas. Esto termina en retrasos, devoluciones y reseñas negativas.",
-      reservas:
-        "En ese caso, hay 3 problemas claros: reservas manuales, huecos por no-show y poca confirmación previa. Eso te hace perder mesas e ingresos por turno.",
-      desconocido:
-        "Por lo que me comentas, en restauración suele haber impacto fuerte en reservas, pedidos y atención en picos; ahí es donde más dinero se escapa.",
-    },
-    eventos: {
-      ventas:
-        "Por lo que me cuentas, aquí hay 2 problemas claros: presupuestos sin seguimiento y baja conversión de consultas a reservas cerradas. Eso impacta caja mensual.",
-      atencion:
-        "Por la info que me das, aquí hay 3 problemas claros: respuestas tardías, información repetida y poca visibilidad del estado de cada cliente.",
-      tiempo:
-        "Por lo que me dices, obviamente hay 2 problemas claros: coordinación manual con proveedores y seguimiento manual de cada evento.",
-      pedidos:
-        "Por esto, veo que hay fricción entre solicitudes del cliente y ejecución del servicio por falta de flujo centralizado.",
-      reservas:
-        "Por esto, aquí se ven 3 problemas claros: reservas manuales, cambios de última hora sin control y confirmaciones tardías.",
-      desconocido:
-        "Por lo que me dices, en eventos suele perderse mucho tiempo en coordinación y seguimiento comercial.",
+      ventas: "Veo impacto directo en ventas por baja recurrencia y seguimiento insuficiente.",
+      atencion: "Veo pérdida de reservas por respuestas tardías y saturación en picos.",
+      tiempo: "Veo tareas repetitivas que quitan foco al servicio.",
+      gestion: "Veo coordinación manual sin trazabilidad entre canales y equipo.",
+      desconocido: "Veo oportunidades claras para mejorar atención y flujo comercial.",
     },
     clinica: {
-      ventas:
-        "Por lo que me cuentas, aquí hay 2 problemas claros: baja reactivación de pacientes y seguimiento comercial poco constante. Eso reduce ocupación de agenda.",
-      atencion:
-        "Por lo que me dices, veo que hay 3 problemas claros: saturación telefónica, consultas repetidas y tiempos de respuesta variables. Esto afecta percepción del servicio y abandono.",
-      tiempo:
-        "Por lo que me dices, aquí hay 3 problemas claros: tareas administrativas manuales, confirmaciones una a una y poca automatización de recordatorios. Eso consume horas clínicas valiosas.",
-      pedidos:
-        "Por esto, se ve que hay fricción operativa en solicitudes y coordinación interna, lo que añade demoras y retrabajo.",
-      reservas:
-        "Por lo que dices, veo 3 problemas claros: gestión manual de citas, no-shows por falta de recordatorio y huecos en agenda. Esto impacta ingresos y continuidad del paciente.",
-      desconocido:
-        "Por lo que me comentas, en clínicas normalmente el mayor impacto está en agenda, recordatorios y atención inicial; ahí suele haber pérdida de tiempo y pacientes.",
+      ventas: "Veo pérdida de ingresos por baja reactivación de pacientes.",
+      atencion: "Veo saturación en atención inicial y respuestas inconsistentes.",
+      tiempo: "Veo carga administrativa manual que resta tiempo clínico.",
+      gestion: "Veo agenda y seguimiento sin suficiente control operativo.",
+      desconocido: "Veo oportunidad de mejorar agenda, atención y seguimiento.",
+    },
+    eventos: {
+      ventas: "Veo oportunidades de ticketing y conversión sin sistematizar.",
+      atencion: "Veo fricción en comunicación y seguimiento de asistentes.",
+      tiempo: "Veo demasiada coordinación manual para la operación del evento.",
+      gestion: "Veo necesidad de control de accesos y acreditaciones.",
+      desconocido: "Veo margen para automatizar registro y seguimiento comercial.",
+    },
+    deportes: {
+      ventas: "Veo margen para monetizar mejor torneos y reservas.",
+      atencion: "Veo consultas repetidas que saturan la atención.",
+      tiempo: "Veo procesos manuales que frenan la operación.",
+      gestion: "Veo necesidad de ordenar gestión de canchas/turnos y control.",
+      desconocido: "Veo oportunidad para digitalizar gestión deportiva.",
     },
     otro: {
-      ventas:
-        "Por lo que me cuentas, aquí hay 2-3 problemas claros: oportunidades sin seguimiento, procesos comerciales manuales y baja recurrencia. Eso te hace perder ventas previsibles.",
-      atencion:
-        "Con la información que me das, aquí hay 2-3 problemas claros: consultas repetitivas, respuestas tardías y sobrecarga del equipo. Esto afecta experiencia y conversión.",
-      tiempo:
-        "Por lo que dices, aquí hay 2-3 problemas claros: tareas operativas manuales, duplicidad de trabajo y poca trazabilidad. Eso se traduce en horas perdidas cada semana.",
-      pedidos:
-        "Con esto que me das, aquí hay 2-3 problemas claros: pedidos dispersos, errores de captura y confirmaciones lentas. Eso impacta rentabilidad y satisfacción.",
-      reservas:
-        "Con esta información, aquí hay 2-3 problemas claros: reservas sin automatizar, cambios manuales y no-shows. Eso reduce ocupación y margen.",
-      desconocido:
-        "Por lo que comentas, hay señales claras de ineficiencia operativa y oportunidades comerciales sin explotar.",
+      ventas: "Veo oportunidades de venta sin seguimiento consistente.",
+      atencion: "Veo fricción de atención por respuestas tardías.",
+      tiempo: "Veo carga manual y baja eficiencia operativa.",
+      gestion: "Veo desorden operativo y poco control del flujo.",
+      desconocido: "Veo oportunidades claras de automatización y control.",
     },
   };
 
-  const solutionsBySector: Record<string, string> = {
-    farmacia:
-      "En tu caso, haría esto: 1) automatizar consultas frecuentes y pedidos por WhatsApp/web, 2) centralizar clientes y seguimiento de recurrencia, 3) activar recordatorios y campañas simples para recompra.",
-    restaurante:
-      "En tu situación, haría esto: 1) automatizar reservas y confirmaciones, 2) centralizar pedidos por canal, 3) lanzar seguimiento post-visita para aumentar repetición.",
-    eventos:
-      "En este caso, haría esto: 1) digitalizar registro/acreditación, 2) automatizar recordatorios y cambios, 3) estructurar seguimiento comercial antes y después del evento.",
-    deportes:
-      "Yo en tu caso haría esto: 1) centralizar consultas y presupuestos, 2) automatizar confirmaciones y recordatorios, 3) digitalizar el flujo de seguimiento hasta el cierre.",
-    clinica:
-      "Yo en tu caso haría esto: 1) automatizar agenda y recordatorios, 2) filtrar consultas repetitivas con asistente inicial, 3) mejorar seguimiento para reducir ausencias.",
-    otro:
-      "Yo en tu caso haría esto: 1) mapear procesos repetitivos, 2) automatizar captación y atención inicial, 3) medir tiempos de respuesta y conversión para optimizar rápido.",
+  const solutionsBySector: Record<Sector, string> = {
+    farmacia: "Propondría automatizar atención, seguimiento de clientes y recompra.",
+    restaurante: "Propondría automatizar reservas, pedidos y comunicación en picos.",
+    clinica: "Propondría automatizar agenda, recordatorios y preatención.",
+    eventos: "Propondría digitalizar registro, acreditaciones y seguimiento.",
+    deportes: "Propondría digitalizar reservas, control de turnos y comunicación.",
+    otro: "Propondría mapear procesos y automatizar los cuellos de botella.",
   };
 
   const sectorLabels: Record<Sector, string> = {
@@ -253,16 +226,6 @@ function buildSectorSolution(sector: Sector, problema: Problema) {
     clinica: "clinica",
     eventos: "eventos",
     deportes: "deportes",
-    salud: "salud",
-    educacion: "educacion",
-    finanzas: "finanzas",
-    entretenimiento: "entretenimiento",
-    diseno: "diseño",
-    ingenieria: "ingenieria",
-    moda: "moda",
-    turismo: "turismo",
-    asesorias: "asesorias",
-    retail: "retail",
     otro: "negocio",
   };
 
@@ -273,16 +236,14 @@ function buildSectorSolution(sector: Sector, problema: Problema) {
       `Por lo que me cuentas, aquí hay 2-3 problemas claros en ${sectorLabels[sector]}: respuestas tardías, consultas repetitivas y sobrecarga del equipo. Esto afecta experiencia y pérdida de clientes.`,
     tiempo:
       `Por lo que me cuentas, aquí hay 2-3 problemas claros en ${sectorLabels[sector]}: tareas manuales, duplicidad de trabajo y poca trazabilidad. Eso se traduce en horas perdidas cada semana.`,
-    pedidos:
-      `Por lo que me cuentas, aquí hay 2-3 problemas claros en ${sectorLabels[sector]}: gestión dispersa de solicitudes, errores de captura y confirmaciones lentas.`,
-    reservas:
-      `Por lo que me cuentas, aquí hay 2-3 problemas claros en ${sectorLabels[sector]}: reservas manuales, cambios sin control y no-shows por falta de recordatorio.`,
+    gestion:
+      `Por lo que me cuentas, aquí hay 2-3 problemas claros en ${sectorLabels[sector]}: organización manual, falta de control operativo y baja trazabilidad del flujo diario.`,
     desconocido:
       `Por lo que me cuentas, en ${sectorLabels[sector]} hay señales claras de ineficiencia operativa y oportunidades comerciales sin explotar.`,
   };
 
   const genericSolution =
-    "Yo en tu caso haría esto: 1) automatizar atención inicial y seguimiento, 2) digitalizar reservas/pedidos con trazabilidad, 3) medir tiempos de respuesta y conversión para mejorar rápido.";
+    "Yo en tu caso haría esto: automatizar atención inicial, ordenar la gestión y medir conversión semanal.";
 
   const diagnosticCopy = diagnostics[sector]?.[problema] ?? genericByProblema[problema];
   const solutionCopy = solutionsBySector[sector] ?? genericSolution;
@@ -291,12 +252,57 @@ function buildSectorSolution(sector: Sector, problema: Problema) {
 }
 
 function nextDiscoverQuestion(lead: LeadDraft) {
-  if (lead.sector === "otro") {
-    return "Para orientarte mejor, ¿en qué sector estás? Ejemplos: salud, educación, finanzas, retail, turismo, deportes, asesorías, diseño, ingeniería, moda, restaurantes, farmacias o eventos.";
+  if (lead.sector === "otro" && !lead.businessDescribed) {
+    return "Para orientarte mejor, ¿en qué sector estás? Ejemplos: farmacia, restaurante/bar, clinica, eventos o deportes.";
   }
   if (lead.problema === "desconocido")
-    return "¿Qué te está afectando más ahora: ventas, atención, tiempo, pedidos o reservas?";
+    return "¿Qué te está afectando más ahora: ventas, atención, tiempo o gestión?";
   return "¿Te entran más consultas por WhatsApp, llamadas o web?";
+}
+
+function buildSystemPrompt({
+  sector,
+  problema,
+  stage,
+  variant,
+}: {
+  sector: Sector;
+  problema: Problema;
+  stage: Stage;
+  variant?: "short" | "full";
+}) {
+  const baseRules = [
+    "Eres un asistente comercial de ReBoTech, cercano, claro y útil.",
+    "Responde de forma natural y humana.",
+    "No inventes servicios ni uses cierre agresivo.",
+    "Si el usuario habla de temas personales, responde con empatía y reconduce suavemente al negocio.",
+  ];
+
+  const stageGuide: Record<Stage, string> = {
+    discover: "Prioriza entender sector y principal dolor.",
+    qualify: "Cuantifica impacto en ventas, tiempo, atención o gestión.",
+    offer: "Sugiere un enfoque concreto sin presión comercial.",
+    capture_contact: "Pide contacto con tacto y explica para qué se usará.",
+    capture_name: "Pide nombre solo para personalizar el seguimiento.",
+    closed: "Cierra con agradecimiento y siguiente paso claro.",
+  };
+
+  const context = [
+    `Sector detectado: ${sector}`,
+    `Problema detectado: ${problema}`,
+    `Fase actual: ${stage}`,
+  ];
+
+  if (variant === "short") {
+    return [...baseRules, stageGuide[stage], ...context].join(" ");
+  }
+
+  const fullGuide = [
+    "Responde de forma natural, adáptate al usuario y detecta necesidades reales de negocio.",
+    "Estructura sugerida: 1) respuesta humana, 2) puente al negocio, 3) una pregunta concreta para avanzar.",
+  ];
+
+  return [...baseRules, ...fullGuide, stageGuide[stage], ...context].join(" ");
 }
 
 function buildAssistantResponse(
@@ -308,6 +314,15 @@ function buildAssistantResponse(
   const trimmedInput = rawInput.trim();
   const input = rawInput.toLowerCase();
   const isGreeting = isGreetingMessage(trimmedInput);
+  const systemPrompt = buildSystemPrompt({
+    sector: lead.sector,
+    problema: lead.problema,
+    stage,
+    variant: stage === "discover" || stage === "qualify" ? "full" : "short",
+  });
+  if (process.env.NODE_ENV !== "production") {
+    console.debug("[assistant] systemPrompt:", systemPrompt);
+  }
 
   if (isGreeting) {
     return {
@@ -322,20 +337,26 @@ function buildAssistantResponse(
       },
       nextStage: stage === "closed" ? "discover" : stage,
       nextAwaitingField: "none" as AwaitingField,
-      sectorChoices: lead.sector === "otro" ? sectorChoices : undefined,
+      sectorChoices: lead.sector === "otro" && !lead.businessDescribed ? sectorChoices : undefined,
     };
   }
 
   const detectedSector = detectSector(input);
   const detectedProblema = detectProblema(input);
   const detectedInteres = detectInteres(input);
+  const detectedBusinessLabel = detectBusinessDescription(trimmedInput);
 
   const merged: LeadDraft = {
     ...lead,
-    sector: detectedSector !== "otro" ? detectedSector : lead.sector,
+    sector:
+      lead.sector === "otro" && detectedSector !== "otro"
+        ? detectedSector
+        : lead.sector,
     problema: detectedProblema !== "desconocido" ? detectedProblema : lead.problema,
     interes: rankInteres(detectedInteres) > rankInteres(lead.interes) ? detectedInteres : lead.interes,
     mensaje_original: lead.mensaje_original || rawInput,
+    businessDescribed: lead.businessDescribed || Boolean(detectedBusinessLabel),
+    businessLabel: detectedBusinessLabel || lead.businessLabel,
   };
 
   const parsedContacto = parseContacto(rawInput);
@@ -380,19 +401,29 @@ function buildAssistantResponse(
     };
   }
 
-  if (merged.sector === "otro" || merged.problema === "desconocido") {
+  if (
+    (merged.sector === "otro" && !merged.businessDescribed) ||
+    merged.problema === "desconocido"
+  ) {
+    const negocio = merged.businessLabel || "tu negocio";
+
+    const businessPrompt =
+      merged.sector === "otro" && merged.businessDescribed
+        ? `Perfecto, entiendo que tienes ${negocio}. En negocios como el tuyo suele haber bastante margen para mejorar reservas, atención al cliente y organización interna. ¿Qué te gustaría optimizar más ahora: reservas, atención, tiempo, gestión o ventas?`
+        : `Para orientarte mejor, ${nextDiscoverQuestion(merged)} Si quieres, también puedes pulsar Probar diagnóstico o Agendar cita aquí abajo.`;
     return {
-      response: `Para darte una respuesta útil y no genérica, necesito un poco más de contexto. ${nextDiscoverQuestion(merged)} Si quieres, también puedes pulsar Probar diagnóstico o Agendar cita aquí abajo.`,
+      response: businessPrompt,
       merged,
       nextStage: "discover" as Stage,
       nextAwaitingField: "none" as AwaitingField,
-      sectorChoices: merged.sector === "otro" ? sectorChoices : undefined,
+      sectorChoices: merged.sector === "otro" && !merged.businessDescribed ? sectorChoices : undefined,
     };
   }
 
   if (stage === "discover") {
+    const negocio = merged.businessLabel || merged.sector;
     return {
-      response: `${buildSectorSolution(merged.sector, merged.problema)} Para afinarlo a tu realidad, ¿cuántos clientes o consultas manejas al día aproximadamente?`,
+      response: `${buildSectorSolution(merged.sector, merged.problema)} En tu caso (${negocio}) esto suele tener impacto directo bastante rápido. Para afinarlo a tu realidad, ¿cuántos clientes o consultas manejas al día aproximadamente?`,
       merged,
       nextStage: "qualify" as Stage,
       nextAwaitingField: "none" as AwaitingField,
@@ -497,12 +528,58 @@ export function AssistantWidget() {
     sessionIdRef.current = created;
   }, []);
 
-  function resolveSolutionBySector(sector: Sector) {
+  function resolveSolution(sector: Sector, problema: Problema) {
     if (sector === "farmacia") return "farmafacil";
+
     if (sector === "restaurante") return "chatbots";
     if (sector === "clinica") return "chatbots";
-    if (sector === "eventos") return "qr";
+
+    if (sector === "eventos") {
+      if (problema === "gestion") return "acreditaciones";
+      if (problema === "ventas") return "tickets";
+      if (problema === "atencion") return "votaciones";
+      return "qr";
+    }
+
+    if (sector === "deportes") {
+      if (problema === "gestion") return "padel";
+      if (problema === "ventas") return "tickets";
+      return "qr";
+    }
+
     return "contacto";
+  }
+
+  function formatChatTranscript(msgs: ChatMessage[]): string {
+    return msgs
+      .map((m) => `${m.role === "user" ? "Usuario" : "Asistente"}: ${m.text}`)
+      .join("\n");
+  }
+
+  function buildAssistantLeadSummary(
+    candidate: LeadDraft,
+    msgs: ChatMessage[],
+    solutionTag: string,
+  ): string {
+    const firstUser = msgs.find((m) => m.role === "user")?.text?.trim() ?? "";
+    const snippet =
+      firstUser.length > 220 ? `${firstUser.slice(0, 220).trim()}…` : firstUser;
+    const parts = [
+      `Sector: ${candidate.sector}`,
+      `Necesidad detectada: ${candidate.problema}`,
+      `Interés comercial: ${candidate.interes}`,
+      `Propuesta orientativa: ${solutionTag}`,
+      snippet ? `Resumen del caso: ${snippet}` : null,
+    ].filter(Boolean);
+    let summary = parts.join(". ");
+    if (summary.length < 40 && snippet) {
+      summary = `Lead asistente ReBoTech. ${snippet}`;
+    }
+    if (summary.length < 20) {
+      summary =
+        `Lead asistente ReBoTech. Sector ${candidate.sector}, necesidad ${candidate.problema}, propuesta ${solutionTag}.`;
+    }
+    return summary;
   }
 
   function splitContact(contacto: string) {
@@ -522,45 +599,99 @@ export function AssistantWidget() {
     return encodeURIComponent(base);
   }
 
-  async function saveLead(candidate: LeadDraft) {
-    if (leadSaved || isSavingLead) return;
+  async function saveLead(
+    candidate: LeadDraft,
+    transcriptMessages: ChatMessage[],
+    tipo: "nuevo" | "update",
+  ) {
+    if (isSavingLead) return;
     const fingerprint = leadFingerprint(candidate);
     const dedupeKey = `rebotech_lead_sent_${sessionIdRef.current}_${fingerprint}`;
-    if (window.sessionStorage.getItem(dedupeKey)) {
+    if (tipo === "nuevo" && window.sessionStorage.getItem(dedupeKey)) {
       setLeadSaved(true);
+      return;
+    }
+
+    const interesDetectado = resolveSolution(candidate.sector, candidate.problema);
+    const solucionFinal = (solucionesValidas as readonly string[]).includes(interesDetectado)
+      ? interesDetectado
+      : "contacto";
+
+    const mensajeOriginalPreview = formatChatTranscript(transcriptMessages).trim();
+    if (!mensajeOriginalPreview) {
+      console.warn("[asistente] No hay historial de chat para enviar.");
       return;
     }
 
     setIsSavingLead(true);
     try {
       const { email, telefono } = splitContact(candidate.contacto);
+      const mensajeOriginal = mensajeOriginalPreview;
+      let resumen = buildAssistantLeadSummary(candidate, transcriptMessages, solucionFinal).trim();
+      if (!resumen) {
+        const firstLine = mensajeOriginal.split("\n")[0]?.trim() ?? "";
+        resumen =
+          firstLine.length > 280 ? `${firstLine.slice(0, 280)}…` : firstLine || mensajeOriginal.slice(0, 400);
+      }
+
       const payload = {
-        nombre: candidate.nombre,
+        tipo,
+
+        // IDENTIFICACION
+        session_id: sessionIdRef.current,
+
+        // DATOS PERSONA
+        nombre: candidate.nombre || "",
         email,
         telefono,
-        contacto: candidate.contacto,
-        sector: candidate.sector,
-        problema: candidate.problema,
-        mensaje: candidate.mensaje_original || "Lead captado por asesor ReBoTech",
-        mensaje_original: candidate.mensaje_original || "",
-        solucion: resolveSolutionBySector(candidate.sector),
+        contacto: candidate.contacto || "",
+
+        // CLASIFICACION NEGOCIO
+        sector: candidate.sector || "otro",
+        problema: candidate.problema || "desconocido",
+
+        // NIVEL INTERES
+        interes: candidate.interes || "bajo",
+
+        // MENSAJES
+        mensaje: resumen,
+        mensaje_original: mensajeOriginal,
+
+        // SOLUCION DETECTADA
+        solucion: solucionFinal,
+
+        // METADATA
         origen: "asistente",
+        estado: "nuevo",
+
+        // EMAIL FLAGS
         enviar_email_usuario: false,
         enviar_email_admin: true,
+
+        // CRM
         seguimiento: "pendiente",
         tipo_seguimiento: "email",
         fecha_seguimiento: "",
-        observaciones_internas: "Lead captado por asesor ReBoTech",
-        interes: candidate.interes,
-        session_id: sessionIdRef.current,
+        observaciones_internas: `Lead IA | sector:${candidate.sector} | problema:${candidate.problema} | interes:${candidate.interes}`,
+
+        // DIAGNOSTICO
+        puntuacion: "",
+        nivel: "",
+        resultado: "",
+        recomendaciones: "",
       };
+
+      console.log("PAYLOAD LEAD:", payload);
+
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!res.ok) return;
-      window.sessionStorage.setItem(dedupeKey, "1");
+      if (tipo === "nuevo") {
+        window.sessionStorage.setItem(dedupeKey, "1");
+      }
       setLeadSaved(true);
       setMessages((prev) => [
         ...prev,
@@ -592,6 +723,26 @@ export function AssistantWidget() {
     return assistantMessage;
   }
 
+  async function fetchAssistantReply(
+    message: string,
+    context: AssistantContextPayload,
+  ): Promise<string | null> {
+    try {
+      const res = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, context }),
+      });
+      if (!res.ok) return null;
+      const data = (await res.json()) as { reply?: string };
+      const reply = typeof data.reply === "string" ? data.reply.trim() : "";
+      return reply || null;
+    } catch (error) {
+      console.error("Error consultando /api/assistant:", error);
+      return null;
+    }
+  }
+
   function resetAssistant(addResetMessage = true) {
     setMessages(initialMessages);
     setLead(initialLeadDraft);
@@ -600,7 +751,7 @@ export function AssistantWidget() {
     setLeadSaved(false);
     setInput("");
     if (addResetMessage) {
-      setMessages((prev) => [
+      setMessages([
         ...initialMessages,
         appendAssistantMessage(
           "Perfecto, reiniciamos desde cero. Cuéntame tu caso y lo vemos paso a paso.",
@@ -619,13 +770,14 @@ export function AssistantWidget() {
     const assistantMessage = appendAssistantMessage(
       `${buildSectorSolution(choice.value, mergedLead.problema)} Para afinarlo a tu realidad, ¿cuántos clientes o consultas manejas al día aproximadamente?`,
     );
-    setMessages((prev) => [...prev, userMessage, assistantMessage]);
+    const nextMessages = [...messages, userMessage, assistantMessage];
+    setMessages(nextMessages);
     setLead(mergedLead);
     setStage("qualify");
     setAwaitingField("none");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedInput = input.trim();
@@ -651,13 +803,36 @@ export function AssistantWidget() {
       stage,
       awaitingField,
     );
-    const assistantMessage = appendAssistantMessageWithChoices(response, sectorChoices);
 
-    setMessages((prev) => [...prev, userMessage, assistantMessage]);
+    const chatHistory = messages
+      .slice(-6)
+      .map((m) => `${m.role === "user" ? "Usuario" : "Asistente"}: ${m.text}`)
+      .join("\n");
+
+    const aiReply = await fetchAssistantReply(trimmedInput, {
+      sector: merged.sector,
+      problema: merged.problema,
+      interes: merged.interes,
+      stage: nextStage,
+      awaitingField: nextAwaitingField,
+      lead: {
+        ...merged,
+        mensaje_original: chatHistory,
+      },
+    });
+    const assistantMessage = appendAssistantMessageWithChoices(aiReply ?? response, sectorChoices);
+
+    const nextMessages = [...messages, userMessage, assistantMessage];
+    setMessages(nextMessages);
     setLead(merged);
     setStage(nextStage);
     setAwaitingField(nextAwaitingField);
     setInput("");
+
+    const hasNewName = merged.nombre && merged.nombre !== lead.nombre;
+    const hasNewContact = merged.contacto && merged.contacto !== lead.contacto;
+    const hasMoreConversation = messages.length > 6;
+    const newInfoDetected = hasNewName || hasNewContact || hasMoreConversation;
 
     const hasNameAndContact = Boolean(merged.nombre) && Boolean(merged.contacto);
     const hasValidSectorAndProblemAndContact =
@@ -665,10 +840,16 @@ export function AssistantWidget() {
       merged.problema !== "desconocido" &&
       Boolean(merged.contacto);
     const hasHighInterestAndContact = merged.interes === "alto" && Boolean(merged.contacto);
-    const shouldSave =
+    const shouldCreate =
       !leadSaved && (hasNameAndContact || hasValidSectorAndProblemAndContact || hasHighInterestAndContact);
-    if (shouldSave) {
-      void saveLead(merged);
+    const shouldUpdate = leadSaved && newInfoDetected;
+
+    if (shouldCreate) {
+      void saveLead(merged, nextMessages, "nuevo");
+    }
+
+    if (shouldUpdate) {
+      void saveLead(merged, nextMessages, "update");
     }
   }
 

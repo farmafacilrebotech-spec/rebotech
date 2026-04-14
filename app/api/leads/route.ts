@@ -36,7 +36,8 @@ function toBoolean(value: boolean | string | undefined, fallback: boolean) {
 
 function resolveTipoLead(solucion: string, origen: string) {
   if (solucion === "diagnostico") return "Inbound caliente";
-  if (origen === "asistente") return "Asistente IA";
+  if (solucion === "implementacion") return "Solicitud de implementación";
+  if (origen === "asistente" || solucion === "asistente") return "Asistente IA";
   return "Contacto";
 }
 
@@ -46,7 +47,14 @@ function normalizeLead(body: LeadPayload) {
   const email = String(body.email ?? (contacto.includes("@") ? contacto : "")).trim();
   const telefono = String(body.telefono ?? (!contacto.includes("@") ? contacto : "")).trim();
   const solucion = String(body.solucion ?? "contacto").trim().toLowerCase();
-  const mensaje = String(body.mensaje ?? "").trim();
+  let mensaje = String(body.mensaje ?? "").trim();
+  let mensajeOriginal = String(body.mensaje_original ?? "").trim();
+  if (!mensajeOriginal && mensaje) {
+    mensajeOriginal = mensaje;
+  }
+  if (origen === "asistente" && !mensaje && mensajeOriginal) {
+    mensaje = mensajeOriginal.length > 400 ? `${mensajeOriginal.slice(0, 400)}…` : mensajeOriginal;
+  }
 
   const defaultsByOrigin =
     origen === "asistente"
@@ -67,6 +75,15 @@ function normalizeLead(body: LeadPayload) {
           observacionesInternas: "",
         };
 
+  const enviarUsuario =
+    origen === "asistente"
+      ? false
+      : toBoolean(body.enviar_email_usuario, defaultsByOrigin.enviarEmailUsuario);
+  const enviarAdmin =
+    origen === "asistente"
+      ? true
+      : toBoolean(body.enviar_email_admin, defaultsByOrigin.enviarEmailAdmin);
+
   return {
     fecha: new Date().toISOString(),
     solucion,
@@ -77,8 +94,8 @@ function normalizeLead(body: LeadPayload) {
     mensaje,
     estado: "Pendiente de contactar",
     origen,
-    enviar_email_usuario: toBoolean(body.enviar_email_usuario, defaultsByOrigin.enviarEmailUsuario),
-    enviar_email_admin: toBoolean(body.enviar_email_admin, defaultsByOrigin.enviarEmailAdmin),
+    enviar_email_usuario: enviarUsuario,
+    enviar_email_admin: enviarAdmin,
     seguimiento: String(body.seguimiento ?? defaultsByOrigin.seguimiento).trim(),
     tipo_seguimiento: String(body.tipo_seguimiento ?? defaultsByOrigin.tipoSeguimiento).trim(),
     fecha_seguimiento: String(body.fecha_seguimiento ?? defaultsByOrigin.fechaSeguimiento).trim(),
@@ -86,7 +103,7 @@ function normalizeLead(body: LeadPayload) {
       body.observaciones_internas ?? defaultsByOrigin.observacionesInternas,
     ).trim(),
     interes: String(body.interes ?? "bajo").trim().toLowerCase(),
-    mensaje_original: String(body.mensaje_original ?? mensaje).trim(),
+    mensaje_original: mensajeOriginal || mensaje,
     sector: String(body.sector ?? "otro").trim().toLowerCase(),
     problema: String(body.problema ?? "desconocido").trim().toLowerCase(),
     session_id: String(body.session_id ?? "").trim(),
@@ -155,6 +172,24 @@ export async function POST(req: Request) {
         { error: "Lead invalido: faltan datos minimos." },
         { status: 400 },
       );
+    }
+
+    if (lead.origen === "asistente" && !lead.mensaje.trim()) {
+      return NextResponse.json(
+        { error: "Lead asistente: el campo mensaje (resumen) no puede estar vacio." },
+        { status: 400 },
+      );
+    }
+
+    if (lead.origen === "asistente") {
+      console.log("[api/leads] lead asistente", {
+        nombre: lead.nombre,
+        interes: lead.interes,
+        enviar_email_usuario: lead.enviar_email_usuario,
+        enviar_email_admin: lead.enviar_email_admin,
+        mensaje_len: lead.mensaje.length,
+        mensaje_original_len: lead.mensaje_original.length,
+      });
     }
 
     const [supabaseResult, sheetsResult] = await Promise.allSettled([

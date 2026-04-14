@@ -1,6 +1,7 @@
 import type { SolutionPageModel } from "@/lib/solutions";
 import { getSolutionCardHtmlPath } from "@/lib/solutionMockup";
 import { PrimaryLeadCTA } from "@/components/leads/LeadModalProvider";
+import Link from "next/link";
 import { CTASection } from "./CTASection";
 import { FeatureList } from "./FeatureList";
 import { SectionTitle } from "./SectionTitle";
@@ -31,6 +32,14 @@ export function SolutionPageView({ solution }: { solution: SolutionPageModel }) 
               href={solution.hero.ctaHref}
               label={solution.hero.ctaLabel}
             />
+            {solution.slug === "chatbots" ? (
+              <Link
+                href="/chatbot-builder"
+                className="mt-4 inline-flex rounded-2xl border border-rebo-subtle bg-rebo-bg px-8 py-4 text-base font-semibold text-rebo-ink transition hover:border-rebo-primary/30 hover:bg-white"
+              >
+                Yo quiero el mío
+              </Link>
+            ) : null}
           </div>
         </div>
       </section>

@@ -58,6 +58,8 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const titleId = useId();
+  const modalTitle =
+    leadSolution?.id === "implementacion" ? "Solicitar implementación" : "Solicitar diagnóstico";
 
   const close = useCallback(() => {
     setVisible(false);
@@ -164,7 +166,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <h3 id={titleId} className="text-lg font-bold text-white">
-                Solicitar diagnóstico
+                {modalTitle}
               </h3>
               <button
                 type="button"

@@ -20,8 +20,8 @@ export function DiagnosticoResults({ payload, leadData, resumen, onRestart }: Pr
 
   const openLead = useCallback(() => {
     open({
-      id: "diagnostico",
-      name: "Diagnóstico interactivo",
+      id: "implementacion",
+      name: "Implementación",
       prefill: {
         nombre: leadData.nombre.trim(),
         email: leadData.email.trim(),
